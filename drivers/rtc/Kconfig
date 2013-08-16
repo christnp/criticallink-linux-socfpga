@@ -163,6 +163,21 @@ config RTC_DRV_AS3722
 	  This driver can also be built as a module. If so, the module
 	  will be called rtc-as3722.
 
+config RTC_DRV_AB18XX
+	tristate "Abracon AB18XX"
+	help
+	  If you say yes here you get support for various compatible Abracon RTC
+	  chips (often with battery backup) connected with I2C. This driver
+	  should handle Abracom AB1801/03/04/05 and AB0801/03/04/05 RTC.
+
+	  The first seven registers on these chips hold an RTC, and other
+	  registers may add features such as NVRAM, a trickle charger for
+	  the RTC/NVRAM backup power, and alarms. NVRAM is visible in
+	  sysfs, but other chip features may not be available.
+
+	  This driver can also be built as a module. If so, the module
+	  will be called rtc-ab18xx.
+
 config RTC_DRV_DS1307
 	tristate "Dallas/Maxim DS1307/37/38/39/40, ST M41T00, EPSON RX-8025"
 	help
