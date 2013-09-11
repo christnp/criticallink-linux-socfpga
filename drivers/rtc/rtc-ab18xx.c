@@ -19,6 +19,10 @@
 #include <linux/string.h>
 #include <linux/rtc.h>
 #include <linux/bcd.h>
+#include <linux/of.h>
+
+
+#define DRIVER_NAME "rtc-ab18xx"
 
 /*
  * We can't determine type by probing, but if we expect pre-Linux code
@@ -85,10 +89,11 @@ enum ab_type {
 #	define AB18XX_BIT_CEB		0x80
 
 
+#define NUM_REGS_MAX 256
 #define NUM_DATE_TIME_REGS 8
 struct ab18xx {
 	u8			offset; /* register's offset */
-	u8			regs[NUM_DATE_TIME_REGS]; /* date/time regs only */
+	u8			regs[NUM_REGS_MAX];
 	u16			nvram_offset;
 	struct bin_attribute	*nvram;
 	enum ab_type		type;
@@ -120,11 +125,6 @@ static const struct chip_desc chips[last_ab_type] = {
 	},
 };
 
-static const struct i2c_device_id ab18xx_id[] = {
-	{ "ab1803", ab_1803 },
-	{ }
-};
-MODULE_DEVICE_TABLE(i2c, ab18xx_id);
 
 /*----------------------------------------------------------------------*/
 
@@ -474,7 +474,7 @@ static int ab18xx_alarm_irq_enable(struct device *dev, unsigned int enabled)
 	return 0;
 }
 
-static const struct rtc_class_ops ds13xx_rtc_ops = {
+static const struct rtc_class_ops ab18xx_rtc_ops = {
 	.read_time	= ab18xx_get_time,
 	.set_time	= ab18xx_set_time,
 	.read_alarm	= ds1337_read_alarm,
@@ -615,10 +615,19 @@ static int ab18xx_probe(struct i2c_client *client,
 		err = -EIO;
 		goto exit_free;
 	}
+	ab18xx->rtc = rtc_device_register(client->name, &client->dev,
+				&ab18xx_rtc_ops, THIS_MODULE);
+	if (IS_ERR(ab18xx->rtc)) {
+		err = PTR_ERR(ab18xx->rtc);
+		dev_err(&client->dev,
+			"unable to register the class device\n");
+		goto exit_free;
+	}
 
 	if (chip->nvram_size) {
 		ab18xx->nvram = kzalloc(sizeof(struct bin_attribute),
 							GFP_KERNEL);
+
 		if (!ab18xx->nvram) {
 			err = -ENOMEM;
 			goto exit_nvram;
@@ -667,16 +676,30 @@ static int ab18xx_remove(struct i2c_client *client)
 	return 0;
 }
 
+static const struct i2c_device_id ab18xx_id[] = {
+	{ "ab1803", ab_1803 },
+	{ }
+};
+MODULE_DEVICE_TABLE(i2c, ab18xx_id);
+
+#ifdef CONFIG_OF
+static const struct of_device_id ab18xx_of_match[] = {
+	{ .compatible = "abracom,ab1803" },
+	{ }
+};
+MODULE_DEVICE_TABLE(of, ab18xx_of_match);
+#endif
+
 static struct i2c_driver ab18xx_driver = {
 	.driver = {
-		.name	= "rtc-ab18xx",
-		.owner	= THIS_MODULE,
+		.name = DRIVER_NAME,
+		.owner = THIS_MODULE,
+		.of_match_table = of_match_ptr(ab18xx_of_match),
 	},
-	.probe		= ab18xx_probe,
-	.remove		= ab18xx_remove,
-	.id_table	= ab18xx_id,
+	.probe = ab18xx_probe,
+	.remove = ab18xx_remove,
+	.id_table = ab18xx_id,
 };
-
 module_i2c_driver(ab18xx_driver);
 
 MODULE_DESCRIPTION("RTC driver for AB18XX and similar chips");
