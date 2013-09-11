@@ -1,0 +1,308 @@
+/*
+ *  Copyright (C) 2013 Critical Link Corporation <www.criticallink.com>
+ *
+ *  Derived from socfpga_cyclone5.dts with following copyright:
+ *
+ *  Copyright (C) 2012 Altera Corporation <www.altera.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/dts-v1/;
+/include/ "socfpga.dtsi"
+
+/ {
+	model = "Altera SOCFPGA Cyclone V";
+	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
+
+	chosen {
+		bootargs = "console=ttyS0,57600";
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x40000000>; /* 1 GB */
+	};
+
+	aliases {
+		/* this allow the ethaddr uboot environmnet variable contents
+		 * to be added to the gmac1 device tree blob.
+		 */
+		ethernet0 = &gmac1;
+	};
+
+	soc {
+		clkmgr@ffd04000 {
+			clocks {
+				osc1 {
+					clock-frequency = <25000000>;
+				};
+			};
+		};
+
+		/* On DevKit Board */
+		dcan0: d_can@ffc00000 {
+		};
+
+		/* On DevKit Board */
+		dcan1: d_can@ffc10000 {
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <4>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		ethernet@ff700000 {
+			status = "disabled";
+		};
+
+		ethernet@ff702000 {
+			phy-mode = "rgmii";
+			phy-addr = <0xffffffff>; /* probe for phy addr */
+		};
+
+		/* I2C0 is on the SOM proper */
+		i2c0: i2c@ffc04000 {
+			speed-mode = <0>;
+		};
+
+		/* I2C1 is on the devkit base board */
+		i2c1: i2c@ffc05000 {
+			speed-mode = <0>;
+		};
+
+		i2c2: i2c@ffc06000 {
+			status = "disabled";
+		};
+
+		i2c3: i2c@ffc07000 {
+			status = "disabled";
+		};
+
+		/* on the SOM */
+		qspi: spi@ff705000 {
+			compatible = "cadence,qspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xff705000 0x1000>,
+				<0xffa00000 0x1000>;
+			interrupts = <0 151 4>;
+			master-ref-clk = <400000000>;
+			ext-decoder = <0>;  /* external decoder */
+			num-chipselect = <4>;
+			fifo-depth = <128>;
+			bus-num = <2>;
+
+			flash0: n25q00@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q00";
+				reg = <0>;	/* chip select */
+				spi-max-frequency = <10000000>;
+				page-size = <256>;
+				block-size = <16>; /* 2^16, 64KB */
+				quad = <1>;	   /* 1-support quad */
+				tshsl-ns = <200>;
+				tsd2d-ns = <255>;
+				tchsh-ns = <20>;
+				tslch-ns = <20>;
+
+				partition@0 {
+					/* 64 KB for preloader image 0. */
+					label = "Preloader Image 0";
+					reg = <0x0 0x10000>;
+				};
+				partition@10000 {
+					/* 64 KB for preloader image 1. */
+					label = "Preloader Image 1";
+					reg = <0x10000 0x10000>;
+				};
+				partition@20000 {
+					/* 64 KB for preloader image 2. */
+					label = "Preloader Image 2";
+					reg = <0x20000 0x10000>;
+				};
+				partition@30000 {
+					/* 64 KB for preloader image 3. */
+					label = "Preloader Image 3";
+					reg = <0x30000 0x10000>;
+				};
+				partition@40000 {
+					/* 64 KB for u-Boot Env */
+					label = "U-Boot Env";
+					reg = <0x40000 0x10000>;
+				};
+				partition@50000 {
+					/* 64 KB for DTB */
+					label = "Device Tree Blob";
+					reg = <0x50000 0x10000>;
+				};
+				partition@60000 {
+					/* u-Boot, 512K */
+					label = "U-Boot";
+					reg = <0x60000 0x80000>;
+				};
+				partition@E0000 {
+					/* Kernel, 8M */
+					label = "Kernel";
+					reg = <0xE0000 0x800000>;
+				};
+				partition@8E0000 {
+					/* 7.125MB for jffs2 data. */
+					label = "Flash 0 Filesystem";
+					reg = <0x8E0000 0x720000>;
+				};
+			};
+
+			flash1: n25q00@1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q00";
+				reg = <1>;	/* chip select */
+				spi-max-frequency = <10000000>;
+				page-size = <256>;
+				block-size = <16>; /* 2^16, 64KB */
+				quad = <1>;	   /* 1-support quad */
+				tshsl-ns = <200>;
+				tsd2d-ns = <255>;
+				tchsh-ns = <20>;
+				tslch-ns = <20>;
+
+				partition@0 {
+					/* 16MB for raw data. */
+					label = "Flash 1 Filesystem";
+					reg = <0x0 0x1000000>;
+				};
+			};
+
+		};
+
+		sysmgr@ffd08000 {
+			cpu1-start-addr = <0xffd080c4>;
+		};
+
+		timer0@ffc08000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer1@ffc09000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer2@ffd00000 {
+			clock-frequency = <25000000>;
+		};
+
+		timer3@ffd01000 {
+			clock-frequency = <25000000>;
+		};
+
+		serial0@ffc02000 {
+			clock-frequency = <100000000>;
+		};
+
+		serial1@ffc03000 {
+			clock-frequency = <100000000>;
+		};
+
+		usb0: usb@ffb00000 {
+			status = "disabled";
+		};
+
+		/* On SOM */
+		usb1: usb@ffb40000 {
+		};
+	};
+
+	/* on DevKit Board */
+	gpio_leds {
+		compatible = "gpio-leds";
+		/* GPIO 50 */
+		devkit_led1 {
+			label = "led1";
+			gpios = <&gpio1 21 1>;
+		};
+
+		/* GPIO 49 */
+		devkit_led2 {
+			label = "led2";
+			gpios = <&gpio1 20 1>;
+		};
+
+		/* GPIO 28 */
+		devkit_led3 {
+			label = "led3";
+			gpios = <&gpio0 28 1>;
+		};
+	};
+
+	/* on DevKit Board */
+	gpio_keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		/* GPIO 37 */
+		button@1 {
+			label = "Switch 1";
+			linux,code = <0x101>;
+			gpios = <&gpio1 8 1>;
+			debounce-interval = <100>;
+		};
+		/* GPIO 40 */
+		button@2 {
+			label = "Switch 2";
+			linux,code = <0x102>;
+			gpios = <&gpio1 11 1>;
+			debounce-interval = <100>;
+		};
+		/* GPIO 41 */
+		button@3 {
+			label = "Switch 3";
+			linux,code = <0x103>;
+			gpios = <&gpio1 12 1>;
+			debounce-interval = <100>;
+		};
+	};
+};
+
+&i2c0 {
+	/* on SOM */
+	led@42 { 
+		device_type = "led";
+		compatible = "ams,as3668";
+		reg = <0x42>;
+	};
+	/* on SOM */
+	eeprom@50 {
+		compatible = "fmd,24c16";
+		reg = <0x50>;
+	};
+	/* on SOM */
+	rtc@69 { 
+		device_type = "rtc";
+		compatible = "abracon,ab1803";
+		reg = <0x69>;
+	};
+};
+
