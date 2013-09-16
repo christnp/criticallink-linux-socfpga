@@ -778,7 +778,7 @@ CONFIG_EEPROM_AT24=y
 #
 # Altera FPGA firmware download module
 #
-# CONFIG_ALTERA_STAPL is not set
+CONFIG_ALTERA_STAPL=y
 
 #
 # SCSI device support
@@ -825,7 +825,8 @@ CONFIG_HAVE_PATA_PLATFORM=y
 #
 # FPGA devices
 #
-# CONFIG_FPGA is not set
+CONFIG_FPGA=y
+CONFIG_FPGA_MGR_ALTERA=y
 CONFIG_NETDEVICES=y
 CONFIG_NET_CORE=y
 # CONFIG_BONDING is not set
@@ -1697,7 +1698,6 @@ CONFIG_LEDS_GPIO=m
 # CONFIG_LEDS_BD2802 is not set
 # CONFIG_LEDS_LT3593 is not set
 # CONFIG_LEDS_TCA6507 is not set
-CONFIG_LEDS_AS3668=m
 # CONFIG_LEDS_LM355x is not set
 # CONFIG_LEDS_OT200 is not set
 # CONFIG_LEDS_BLINKM is not set
