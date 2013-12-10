@@ -170,7 +170,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
 	ret = register_fpga_bridge(pdev, &altera_fpga2sdram_br_ops,
 				    priv->name, priv);
 
-	if (!ret)
+	if (ret)
 		return ret;
 
 	if (of_property_read_u32(priv->np, "init-val", &init_val))
