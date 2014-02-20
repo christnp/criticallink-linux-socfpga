@@ -19,7 +19,7 @@
 /include/ "socfpga.dtsi"
 
 / {
-	model = "MityARM-5CSX Altera SOCFPGA Cyclone V";
+	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
 	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
 
 	chosen {
@@ -188,7 +188,7 @@
 		};
 
 		hps_fpgabridge1: fpgabridge@1 {
-			init-val = <1>;
+			init-val = <0>;
 		};
 
 		fpga2sdram_br: fpgabridge@3 {
@@ -197,7 +197,7 @@
 			read-ports-mask = <0xF>;
 			write-ports-mask = <0xF>;
 			cmd-ports-mask = <0x3F>;
-			init-val = <1>;
+			/* init-val = <0>; */
 		};
 	};
 
