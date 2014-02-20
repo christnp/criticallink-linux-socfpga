@@ -19,7 +19,7 @@
 /include/ "socfpga.dtsi"
 
 / {
-	model = "MityARM-5CSX Altera SOCFPGA Cyclone V";
+	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
 	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
 
 	chosen {
@@ -194,7 +194,6 @@
 		};
 
 		usb1: usb@ffb40000 {
-			ulpi-ddr = <0>;
 			status = "okay";
 		};
 
