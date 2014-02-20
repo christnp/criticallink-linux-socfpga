@@ -19,7 +19,7 @@
 /include/ "socfpga.dtsi"
 
 / {
-	model = "MityARM-5CSX Altera SOCFPGA Cyclone V";
+	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
 	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
 
 	chosen {
@@ -48,6 +48,16 @@
 			};
 		};
 
+		/* On DevKit Board */
+		dcan0: d_can@ffc00000 {
+			status = "okay";
+		};
+
+		/* On DevKit Board */
+		dcan1: d_can@ffc01000 {
+			status = "okay";
+		};
+
 		dwmmc0@ff704000 {
 			num-slots = <1>;
 			supports-highspeed;
@@ -66,7 +76,7 @@
 			status = "okay";
 		};
 
-		/* I2C1 is connected to the camera */
+		/* on DevKit Baseboard */
 		i2c1: i2c@ffc05000 {
 			speed-mode = <0>;
 			status = "okay";
@@ -183,48 +193,40 @@
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
-		watchdog0: wd@ffd02000 {
+		usb1: usb@ffb40000 {
 			status = "okay";
 		};
 
-		hps_fpgabridge1: fpgabridge@1 {
-			init-val = <1>;
-		};
-
-		fpga2sdram_br: fpgabridge@3 {
-			compatible = "altr,socfpga-fpga2sdram-bridge";
-			label = "fpga2sdram";
-			read-ports-mask = <0xF>;
-			write-ports-mask = <0xF>;
-			cmd-ports-mask = <0x3F>;
-			init-val = <1>;
+		watchdog0: wd@ffd02000 {
+			status = "okay";
 		};
 	};
 
-	gpio_leds {
-		compatible = "gpio-leds";
-		/* GPIO 43 */
-		devkit_led1 {
-			label = "led1";
-			gpios = <&gpio1 14 1>;
+	/* on DevKit Board */
+	gpio_keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		/* GPIO 37 */
+		button@1 {
+			label = "Switch 1";
+			linux,code = <0x101>;
+			gpios = <&gpio1 8 1>;
+			debounce-interval = <100>;
 		};
-
-		/* GPIO 41 */
-		devkit_led2 {
-			label = "led2";
-			gpios = <&gpio1 12 1>;
-		};
-
 		/* GPIO 40 */
-		devkit_led3 {
-			label = "led3";
+		button@2 {
+			label = "Switch 2";
+			linux,code = <0x102>;
 			gpios = <&gpio1 11 1>;
+			debounce-interval = <100>;
 		};
-
-		/* GPIO 61 */
-		devkit_statusled {
-			label = "statusled";
-			gpios = <&gpio2 3 1>;
+		/* GPIO 41 */
+		button@3 {
+			label = "Switch 3";
+			linux,code = <0x103>;
+			gpios = <&gpio1 12 1>;
+			debounce-interval = <100>;
 		};
 	};
 };
