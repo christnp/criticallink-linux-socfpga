@@ -1,5 +1,6 @@
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA family" if ARCH_MULTI_V7
+	select ARCH_SUPPORTS_MSI
 	select ARCH_WANT_OPTIONAL_GPIOLIB
 	select ARM_AMBA
 	select ARM_GIC
@@ -20,6 +21,7 @@ config ARCH_SOCFPGA
 	select ARM_ERRATA_754322
 	select ARM_ERRATA_764369 if SMP
 	select ARM_ERRATA_775420
+	select PCI
 	select PL310_ERRATA_588369
 	select PL310_ERRATA_727915
 	select PL310_ERRATA_753970 if PL310

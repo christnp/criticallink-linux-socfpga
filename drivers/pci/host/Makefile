@@ -4,3 +4,5 @@ obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
 obj-$(CONFIG_PCI_MVEBU) += pci-mvebu.o
 obj-$(CONFIG_PCI_TEGRA) += pci-tegra.o
 obj-$(CONFIG_PCI_RCAR_GEN2) += pci-rcar-gen2.o
+obj-$(CONFIG_PCI_ALTERA)	+= pci-altera.o
+obj-$(CONFIG_PCI_ALTERA_MSI)	+= pci-altera-msi.o
