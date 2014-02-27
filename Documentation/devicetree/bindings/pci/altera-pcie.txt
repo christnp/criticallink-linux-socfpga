@@ -1,0 +1,31 @@
+* Altera PCIe controller
+
+Required properties:
+- compatible : should contain "altr,pcie-root-port-1.0"
+- reg: A list of physical base address and length for TXS and CRA.
+- reg-names: Must include the following entries:
+  "Txs": TXS region
+  "Cra": Cra registers
+-interrupts: specifies the interrupt source of the parent interrupt
+     controller. The format of the interrupt specifier depends on the
+     parent interrupt controller.
+- device_type: must be "pci"
+
+Optional properties:
+- altr,msi = phandle to the MSI component
+
+Example
+	pcie_0: pcie@0x0 {
+		compatible = "altr,pcie-root-port-1.0";
+		reg = < 0xc0000000 0x20000000
+			0xFF240000 0x00004000  >;
+		reg-names = “Txs”, “Cra”;
+		interrupt-parent = < &hps_0_arm_gic_0 >;
+		interrupts = < 0 43 4 >;
+		interrupt-controller;
+		#interrupt-cells = < 1 >;
+		altr,msi = <&msi_0>;
+		device_type = "pci";
+	};
+
+
