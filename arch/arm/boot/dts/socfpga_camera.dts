@@ -19,7 +19,7 @@
 /include/ "socfpga.dtsi"
 
 / {
-	model = "SOC Camera CIS2521";
+	model = "SOC Camera";
 	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
 
 	chosen {
