@@ -199,6 +199,13 @@
 			cmd-ports-mask = <0x3F>;
 			/* init-val = <0>; */
 		};
+
+		sldhub: debugger {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "altr,sld-hub";
+			reg = <0xFF220000 0x80>;
+		};
 	};
 
 	gpio_leds {
