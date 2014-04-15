@@ -238,6 +238,11 @@
 		compatible = "ams,as3668";
 		reg = <0x42>;
 	};
+	led@4d {
+		device_type = "led";
+		compatible = "ti,lp5562";
+		reg = <0x4D>;
+	};
 	/* on SOM */
 	eeprom@50 {
 		compatible = "fmd,24c16";
