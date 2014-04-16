@@ -244,7 +244,7 @@
 		clock-mode = /bits/8 <2>;
 
 		chan0 {
-			chan-name = "B";
+			chan-name = "R";
 			led-cur = /bits/ 8 <0x20>;
 			max-cur = /bits/ 8 <0x60>;
 		};
@@ -256,7 +256,7 @@
 		};
 
 		chan2 {
-			chan-name = "R";
+			chan-name = "B";
 			led-cur = /bits/ 8 <0x20>;
 			max-cur = /bits/ 8 <0x60>;
 		};
