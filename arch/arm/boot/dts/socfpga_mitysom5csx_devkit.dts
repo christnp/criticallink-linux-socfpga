@@ -238,10 +238,34 @@
 		compatible = "ams,as3668";
 		reg = <0x42>;
 	};
-	led@4d {
-		device_type = "led";
+	led@30 {
 		compatible = "ti,lp5562";
-		reg = <0x4D>;
+		reg = <0x30>;
+		clock-mode = /bits/8 <2>;
+
+		chan0 {
+			chan-name = "R";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan1 {
+			chan-name = "G";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan2 {
+			chan-name = "B";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan3 {
+			chan-name = "W";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
 	};
 	/* on SOM */
 	eeprom@50 {
