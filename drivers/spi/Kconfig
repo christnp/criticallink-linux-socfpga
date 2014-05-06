@@ -147,6 +147,12 @@ config SPI_BUTTERFLY
 	  inexpensive battery powered microcontroller evaluation board.
 	  This same cable can be used to flash new firmware.
 
+config SPI_CL
+	tristate "Critical Link FPGA SPI Controller"
+	select SPI_BITBANG
+	help
+	  This is the driver for the Critical Link Qsys FPGA SPI Controller.
+
 config SPI_CLPS711X
 	tristate "CLPS711X host SPI controller"
 	depends on ARCH_CLPS711X
