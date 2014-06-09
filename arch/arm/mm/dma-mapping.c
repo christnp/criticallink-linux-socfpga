@@ -38,6 +38,8 @@
 
 #include "mm.h"
 
+EXPORT_SYMBOL(dmac_map_area);
+
 /*
  * The DMA API is built upon the notion of "buffer ownership".  A buffer
  * is either exclusively owned by the CPU (and therefore may be accessed
