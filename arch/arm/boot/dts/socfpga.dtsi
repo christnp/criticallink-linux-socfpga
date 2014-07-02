@@ -910,7 +910,7 @@
 			compatible = "snps,dw-wdt";
 			reg = <0xffd03000 0x1000>;
 			interrupts = <0 172 4>;
-			clocks = <&per_base_clk>;
+			clocks = <&osc1>;
 			status = "disabled";
 		};
 	};
