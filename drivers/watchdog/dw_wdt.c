@@ -106,7 +106,12 @@ static int dw_wdt_set_top(unsigned top_s)
 			break;
 		}
 
-	/* Set the new value in the watchdog. */
+	/* 
+	 * Set the new value in the watchdog. 
+	 * Need to also set the initial value when first enabling device, just
+	 * use the same value as for the "normal" countdown case.
+	 */
+	top_val |= top_val<<4;
 	writel(top_val, dw_wdt.regs + WDOG_TIMEOUT_RANGE_REG_OFFSET);
 
 	dw_wdt_set_next_heartbeat();
