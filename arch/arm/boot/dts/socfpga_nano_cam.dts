@@ -235,7 +235,7 @@
 			compatible = "cl,camio-1.0";
 			reg = <0xff220000 0x20>;
 			interrupts = <0 41 4>;
-			virtual_irq_start = <257>;
+			virtual_irq_start = <342>;
 			interrupt-controller;
 			#interrupt-cells = <2>;
 			gpio-controller;
