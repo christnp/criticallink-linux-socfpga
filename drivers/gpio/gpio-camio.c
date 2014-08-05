@@ -32,8 +32,6 @@
 #define CAMIO_GPIO_IER			0x04
 #define CAMIO_GPIO_IPR			0x08
 #define CAMIO_GPIO_EDGER		0x0C
-#define CAMIO_IRQ_RISING		0
-#define CAMIO_IRQ_FALLING		1
 
 struct camio_gpio_chip {
 	struct of_mm_gpio_chip mmchip;
@@ -83,20 +81,29 @@ static int camio_gpio_irq_set_type(struct irq_data *d,
 	if (type == IRQ_TYPE_NONE)
 		return 0;
 
-	if (type == IRQ_TYPE_EDGE_RISING)
-	{
+	if (type == IRQ_TYPE_EDGE_RISING) {
 		spin_lock_irqsave(&camio_gc->gpio_lock, flags);
 		edgemask = readl(mm_gc->regs + CAMIO_GPIO_EDGER);
-		edgemask &= ~(1 << irqd_to_hwirq(d));
+		edgemask |= (1 << irqd_to_hwirq(d));
+		edgemask &= ~(1 << (irqd_to_hwirq(d) + 4));
 		writel(edgemask, mm_gc->regs + CAMIO_GPIO_EDGER);
 		spin_unlock_irqrestore(&camio_gc->gpio_lock, flags);
 		return 0;
 	}
-	else if (type == IRQ_TYPE_EDGE_FALLING)
-	{
+	else if (type == IRQ_TYPE_EDGE_FALLING) {
+		spin_lock_irqsave(&camio_gc->gpio_lock, flags);
+		edgemask = readl(mm_gc->regs + CAMIO_GPIO_EDGER);
+		edgemask &= ~(1 << irqd_to_hwirq(d));
+		edgemask |= (1 << (irqd_to_hwirq(d) + 4));
+		writel(edgemask, mm_gc->regs + CAMIO_GPIO_EDGER);
+		spin_unlock_irqrestore(&camio_gc->gpio_lock, flags);
+		return 0;
+	}
+	else if (type == IRQ_TYPE_EDGE_BOTH) {
 		spin_lock_irqsave(&camio_gc->gpio_lock, flags);
 		edgemask = readl(mm_gc->regs + CAMIO_GPIO_EDGER);
 		edgemask |= (1 << irqd_to_hwirq(d));
+		edgemask |= (1 << (irqd_to_hwirq(d) + 4));
 		writel(edgemask, mm_gc->regs + CAMIO_GPIO_EDGER);
 		spin_unlock_irqrestore(&camio_gc->gpio_lock, flags);
 		return 0;
@@ -238,13 +245,18 @@ static ssize_t camio_altinput_show(struct device *dev,
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	struct camio_gpio_chip *camio_gc = platform_get_drvdata(pdev);
-	unsigned int reg, val, i;
+	unsigned int reg, val, i, offset;
 	ssize_t	status;
+
+	offset = 1;
+	if (!strcmp(attr->attr.name, "input_polarity")) {
+		offset = 6;
+	}
 
 	reg = readl(camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 	val = 0;
 	for (i = 0; i < 4; i++) {
-		if (reg & (1 << (i * 8 + 1)))
+		if (reg & (1 << (i * 8 + offset)))
 			val |= (1 << i);
 	}
 	status = sprintf(buf, "0x%X\n", val);
@@ -258,16 +270,21 @@ static ssize_t camio_altinput_store(struct device *dev,
 	// struct gpio_desc	*desc = dev_get_drvdata(dev);
 	struct platform_device *pdev = to_platform_device(dev);
 	struct camio_gpio_chip *camio_gc = platform_get_drvdata(pdev);
-	unsigned int val, reg, i;
+	unsigned int val, reg, i, offset;
+
+	offset = 1;
+	if (!strcmp(attr->attr.name, "input_polarity")) {
+		offset = 6;
+	}
 
 	sscanf(buf, "%x", &val);
 
 	/* Set pin as input, assumes software controlled IP */
 	reg = readl(camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 	for (i = 0; i < 4; i++) {
-		reg &= ~(1 << (i * 8 + 1));
+		reg &= ~(1 << (i * 8 + offset));
 		if (val & (1 << i))
-			reg |= (1 << (i * 8 + 1));
+			reg |= (1 << (i * 8 + offset));
 	}
 	writel(reg, camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 
@@ -275,9 +292,11 @@ static ssize_t camio_altinput_store(struct device *dev,
 }
 
 static DEVICE_ATTR(altinput, 0666, camio_altinput_show, camio_altinput_store);
+static DEVICE_ATTR(input_polarity, 0666, camio_altinput_show, camio_altinput_store);
 
 static struct attribute *camio_attrs[] = {
 	&dev_attr_altinput.attr,
+	&dev_attr_input_polarity.attr,
 	NULL,
 };
 static struct attribute_group camio_attr_group = {
