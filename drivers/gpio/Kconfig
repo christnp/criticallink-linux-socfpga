@@ -147,6 +147,12 @@ config GPIO_ALTERA
        help
          Say yes here to support the Altera PIO device.
 
+config GPIO_CAMIO
+       tristate "Camera GPIO"
+       depends on OF_GPIO
+       help
+         Say yes here to support the MitySOC Camera GPIO device.
+
 config GPIO_IT8761E
 	tristate "IT8761E GPIO support"
 	depends on X86  # unconditional access to IO space.
