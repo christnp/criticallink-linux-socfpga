@@ -127,6 +127,12 @@ config GPIO_ALTERA
        help
          Say yes here to support the Altera PIO device.
 
+config GPIO_CAMIO
+       tristate "Camera GPIO"
+       depends on OF_GPIO
+       help
+         Say yes here to support the MitySOC Camera GPIO device.
+
 config GPIO_DW
 	tristate "Synopsys DesignWare GPIO driver"
 	select GPIO_GENERIC

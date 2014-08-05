@@ -1,0 +1,30 @@
+Critical Link CameraIO GPIO controller bindings
+
+Required properties:
+- compatible:
+  - "cl,camio-1.0"
+- reg: Physical base address and length of the controller's registers.
+- #gpio-cells : Should be two.
+  - first cell is the pin number
+  - second cell is used to specify optional parameters (unused)
+- gpio-controller : Marks the device node as a GPIO controller.
+- #interrupt-cells : Should be 1.
+- interrupts: Specify the interrupt.
+- interrupt-controller: Mark the device node as an interrupt controller
+  The first cell is the GPIO number.
+
+Note: If the CameraIO GPIO is set to be built as a module, peripherals that uses
+CameraIO GPIO as interrupt-parent should be a module so that the peripheral
+doesn't get initialized before CameraIO GPIO is initialized.
+
+Example:
+
+gpio_altr: gpio_altr {
+    compatible = "altr,pio-1.0";
+    reg = <0xff200000 0x10>;
+    interrupts = <0 45 4>;
+    #gpio-cells = <2>;
+    gpio-controller;
+    #interrupt-cells = <1>;
+    interrupt-controller;
+};
