@@ -344,6 +344,8 @@ dtb-$(CONFIG_ARCH_SOCFPGA) += socfpga_arria5_socdk.dtb \
 	socfpga_cyclone5_socdk.dtb \
 	socfpga_cyclone5_sockit.dtb \
 	socfpga_cyclone5_socrates.dtb \
+	socfpga_camera.dtb \
+	socfpga_cmv8000_cam.dtb \
 	socfpga_mitysom5csx_devkit.dtb \
 	socfpga_mitysom5csx_niagara.dtb \
 	socfpga_nano_cam.dtb \
