@@ -170,14 +170,14 @@
 				compatible = "linux,spidev";
 			};
 		};
-/*
+
 		sldhub: debugger {
 			#address-cells = <1>;
 			#size-cells = <1>;
 			compatible = "altr,sld-hub";
-			reg = <0xFF220000 0x80>;
+			reg = <0xFF221000 0x80>;
 		};
-*/
+
 		timer0@ffc08000 {
 			clock-frequency = <100000000>;
 		};
@@ -223,6 +223,11 @@
 			#interrupt-cells = <2>;
 			gpio-controller;
 			#gpio-cells = <2>;
+		};
+
+		streamer0: streamer@20000000 {
+			compatible = "uio,irq";
+			interrupts = <0 41 4>;
 		};
 	};
 
