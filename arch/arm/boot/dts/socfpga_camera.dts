@@ -200,6 +200,11 @@
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
+
+		streamer0: streamer@20000000 {
+			compatible = "uio,irq";
+			interrupts = <0 40 4>;
+		};
 	};
 
 };
