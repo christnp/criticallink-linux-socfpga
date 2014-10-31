@@ -56,7 +56,7 @@ endchoice
 
 config USB_DWC2_PLATFORM
 	bool
-        depends on !PCI
+        depends on !USB_DWC2_PCI
         default y
         help
           The Designware USB2.0 platform interface module for
