@@ -16,7 +16,7 @@
  */
 
 /dts-v1/;
-/include/ "socfpga.dtsi"
+#include "socfpga.dtsi"
 
 / {
 	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
@@ -55,6 +55,18 @@
 
 		/* On DevKit Board */
 		dcan1: d_can@ffc01000 {
+			status = "okay";
+		};
+
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
 			status = "okay";
 		};
 
@@ -193,13 +205,16 @@
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
+/*
 		usb1: usb@ffb40000 {
 			status = "okay";
 		};
+		*/
 
-		watchdog0: wd@ffd02000 {
+/*		watchdog0: wd@ffd02000 {
 			status = "okay";
 		};
+		*/
 	};
 
 	/* on DevKit Board */
@@ -229,6 +244,14 @@
 			debounce-interval = <100>;
 		};
 	};
+};
+
+&usb1 {
+	status = "okay";
+};
+
+&watchdog0 {
+	status = "okay";
 };
 
 &i2c0 {

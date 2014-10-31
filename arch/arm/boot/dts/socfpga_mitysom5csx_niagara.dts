@@ -16,7 +16,7 @@
  */
 
 /dts-v1/;
-/include/ "socfpga.dtsi"
+#include "socfpga.dtsi"
 
 / {
 	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
@@ -183,9 +183,6 @@
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
-		watchdog0: wd@ffd02000 {
-			status = "okay";
-		};
 
 		hps_fpgabridge1: fpgabridge@1 {
 			init-val = <0>;
@@ -234,6 +231,10 @@
 			gpios = <&gpio2 3 1>;
 		};
 	};
+};
+
+&watchdog0 {
+	status = "okay";
 };
 
 &i2c0 {

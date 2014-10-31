@@ -16,7 +16,7 @@
  */
 
 /dts-v1/;
-/include/ "socfpga.dtsi"
+#include "socfpga.dtsi"
 
 / {
 	model = "SOC Camera";
@@ -227,10 +227,6 @@
 			status = "okay";
 		};
 
-		watchdog0: wd@ffd02000 {
-			status = "okay";
-		};
-
 		gpio3: gpio@ff220000 {
 			compatible = "cl,camio-1.0";
 			reg = <0xff220000 0x20>;
@@ -243,6 +239,10 @@
 		};
 	};
 
+};
+
+&watchdog0 {
+	status = "okay";
 };
 
 &i2c0 {
