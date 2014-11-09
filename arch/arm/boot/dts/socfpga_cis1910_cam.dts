@@ -206,14 +206,6 @@
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
-		usb1: usb@ffb40000 {
-			status = "okay";
-		};
-
-		watchdog0: wd@ffd02000 {
-			status = "okay";
-		};
-
 		gpio3: gpio@ff220000 {
 			compatible = "cl,camio-1.0";
 			reg = <0xff220000 0x20>;
@@ -231,6 +223,14 @@
 		};
 	};
 
+};
+
+&usb1 {
+	status = "okay";
+};
+
+&watchdog0 {
+	status = "okay";
 };
 
 &i2c0 {

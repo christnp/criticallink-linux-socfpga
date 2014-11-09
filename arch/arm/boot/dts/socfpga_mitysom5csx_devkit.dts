@@ -16,7 +16,7 @@
  */
 
 /dts-v1/;
-/include/ "socfpga.dtsi"
+#include "socfpga.dtsi"
 
 / {
 	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
@@ -49,12 +49,24 @@
 		};
 
 		/* On DevKit Board */
-		dcan0: d_can@ffc00000 {
+		dcan0: can@ffc00000 {
 			status = "okay";
 		};
 
 		/* On DevKit Board */
-		dcan1: d_can@ffc01000 {
+		dcan1: can@ffc01000 {
+			status = "okay";
+		};
+
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
 			status = "okay";
 		};
 
@@ -193,13 +205,6 @@
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
-		usb1: usb@ffb40000 {
-			status = "okay";
-		};
-
-		watchdog0: wd@ffd02000 {
-			status = "okay";
-		};
 	};
 
 	/* on DevKit Board */
@@ -231,12 +236,24 @@
 	};
 };
 
+&usb1 {
+	status = "okay";
+};
+
+&watchdog0 {
+	status = "okay";
+};
+
 &i2c0 {
 	/* on SOM */
 	led@42 {
 		device_type = "led";
 		compatible = "ams,as3668";
 		reg = <0x42>;
+	};
+	hwmon@4C {
+		compatible = "lm73";
+		reg = <0x4C>;
 	};
 	led@30 {
 		compatible = "ti,lp5562";

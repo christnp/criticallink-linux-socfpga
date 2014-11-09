@@ -116,7 +116,7 @@
 			cpu1-start-addr = <0xffd08010>;
 		};
 
-		watchdog0: wd@ffd02000 {
+		watchdog0: watchdog@ffd02000 {
 			status = "okay";
 		};
 
