@@ -598,64 +598,43 @@
 			status = "disabled";
 		};
 
-		gpio@ff708000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "snps,dw-apb-gpio";
+		gpio0: gpio@ff708000 {
+			compatible = "snps,dw-gpio";
 			reg = <0xff708000 0x1000>;
-			clocks = <&l4_mp_clk>;
-			status = "disabled";
-
-			gpio0: gpio-controller@0 {
-				compatible = "snps,dw-apb-gpio-port";
-				gpio-controller;
-				#gpio-cells = <2>;
-				snps,nr-gpios = <29>;
-				reg = <0>;
-				interrupt-controller;
-				#interrupt-cells = <2>;
-				interrupts = <0 164 4>;
-			};
+			interrupts = <0 164 4>;
+			width = <29>;
+			virtual_irq_start = <257>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			clocks = <&per_base_clk>;
 		};
 
-		gpio@ff709000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "snps,dw-apb-gpio";
+		gpio1: gpio@ff709000 {
+			compatible = "snps,dw-gpio";
 			reg = <0xff709000 0x1000>;
-			clocks = <&l4_mp_clk>;
-			status = "disabled";
-
-			gpio1: gpio-controller@0 {
-				compatible = "snps,dw-apb-gpio-port";
-				gpio-controller;
-				#gpio-cells = <2>;
-				snps,nr-gpios = <29>;
-				reg = <0>;
-				interrupt-controller;
-				#interrupt-cells = <2>;
-				interrupts = <0 165 4>;
-			};
+			interrupts = <0 165 4>;
+			width = <29>;
+			virtual_irq_start = <286>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			clocks = <&per_base_clk>;
 		};
 
-		gpio@ff70a000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "snps,dw-apb-gpio";
+		gpio2: gpio@ff70a000 {
+			compatible = "snps,dw-gpio";
 			reg = <0xff70a000 0x1000>;
-			clocks = <&l4_mp_clk>;
-			status = "disabled";
-
-			gpio2: gpio-controller@0 {
-				compatible = "snps,dw-apb-gpio-port";
-				gpio-controller;
-				#gpio-cells = <2>;
-				snps,nr-gpios = <27>;
-				reg = <0>;
-				interrupt-controller;
-				#interrupt-cells = <2>;
-				interrupts = <0 166 4>;
-			};
+			interrupts = <0 166 4>;
+			width = <27>;
+			virtual_irq_start = <315>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			clocks = <&per_base_clk>;
 		};
 
 		L2: l2-cache@fffef000 {
