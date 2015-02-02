@@ -291,12 +291,40 @@ static ssize_t camio_altinput_store(struct device *dev,
 	return size;
 }
 
+static ssize_t camio_altoutput_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	struct platform_device *pdev = to_platform_device(dev);
+	struct camio_gpio_chip *camio_gc = platform_get_drvdata(pdev);
+	unsigned int pins, select, reg, i, offset, ret;
+
+	offset = 3;
+
+	ret = sscanf(buf, "%x %x", &pins, &select);
+
+	if (ret == 2) {
+		reg = readl(camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
+		for (i = 0; i < 4; i++) {
+			/* If pin was selected, set the output mux */
+			if (pins & (1 << i))
+				reg |= (select << (i * 8 + offset));
+		}
+		writel(reg, camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
+	} else {
+		size = -1;
+	}
+
+	return size;
+}
+
 static DEVICE_ATTR(altinput, 0666, camio_altinput_show, camio_altinput_store);
 static DEVICE_ATTR(input_polarity, 0666, camio_altinput_show, camio_altinput_store);
+static DEVICE_ATTR(altoutput, 0222, NULL, camio_altoutput_store);
 
 static struct attribute *camio_attrs[] = {
 	&dev_attr_altinput.attr,
 	&dev_attr_input_polarity.attr,
+	&dev_attr_altoutput.attr,
 	NULL,
 };
 static struct attribute_group camio_attr_group = {
