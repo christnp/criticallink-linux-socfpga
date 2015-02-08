@@ -58,6 +58,15 @@
 			status = "okay";
 		};
 
+		mdio {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: ethernet-phy@2 {
+				txc-skew-ps = <960>;
+				reg = <0x2>;
+			};
+		};
+
 		gpio@ff708000 {
 			status = "okay";
 		};
@@ -304,17 +313,11 @@
 };
 
 &gmac1 {
-	phy-mode = "rgmii";
-	snps,phy-addr = <0xffffffff>; /* probe for phy addr */
-	rxd0-skew-ps = <0>;
-	rxd0-skew-ps = <0>;
-	rxd1-skew-ps = <0>;
-	rxd2-skew-ps = <0>;
-	rxd3-skew-ps = <0>;
-	txen-skew-ps = <0>;
-	txc-skew-ps = <2600>;
-	rxdv-skew-ps = <0>;
-	rxc-skew-ps = <2000>;
-	snps,max-mtu = <4062>;
 	status = "okay";
+	phy-mode = "rgmii";
+	phy = <&phy0>;
+	snps,reset-gpio = <&gpio0 28 1>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 10000 1000000>;
+	snps,max-mtu = <4062>;
 };
