@@ -384,6 +384,8 @@ static int ksz9031_config_init(struct phy_device *phydev)
 				MII_KSZ9031RN_TX_DATA_PAD_SKEW, 4,
 				tx_data_skews, 4);
 	}
+
+	genphy_config_init(phydev);
 	return 0;
 }
 
