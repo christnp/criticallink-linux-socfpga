@@ -58,15 +58,6 @@
 			status = "okay";
 		};
 
-		mdio {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			phy0: ethernet-phy@2 {
-				txc-skew-ps = <960>;
-				reg = <0x2>;
-			};
-		};
-
 		gpio@ff708000 {
 			status = "okay";
 		};
@@ -213,17 +204,6 @@
 		sysmgr@ffd08000 {
 			cpu1-start-addr = <0xffd080c4>;
 		};
-
-/*
-		usb1: usb@ffb40000 {
-			status = "okay";
-		};
-		*/
-
-/*		watchdog0: wd@ffd02000 {
-			status = "okay";
-		};
-		*/
 	};
 
 	/* on DevKit Board */
@@ -315,9 +295,5 @@
 &gmac1 {
 	status = "okay";
 	phy-mode = "rgmii";
-	phy = <&phy0>;
-	snps,reset-gpio = <&gpio0 28 1>;
-	snps,reset-active-low;
-	snps,reset-delays-us = <0 10000 1000000>;
 	snps,max-mtu = <4062>;
 };
