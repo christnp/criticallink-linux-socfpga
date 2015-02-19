@@ -236,6 +236,7 @@
 };
 
 &usb1 {
+	compatible = "snps,dwc2-vbus-ext";
 	status = "okay";
 };
 
