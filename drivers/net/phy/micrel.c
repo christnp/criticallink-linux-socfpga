@@ -389,6 +389,12 @@ static int ksz9031_config_init(struct phy_device *phydev)
 	return 0;
 }
 
+static int ksz9031_soft_reset(struct phy_device *phydev)
+{
+	/* Don't do anything */
+	return 0;
+}
+
 #define KSZ8873MLL_GLOBAL_CONTROL_4	0x06
 #define KSZ8873MLL_GLOBAL_CONTROL_4_DUPLEX	(1 << 6)
 #define KSZ8873MLL_GLOBAL_CONTROL_4_SPEED	(1 << 4)
@@ -582,6 +588,7 @@ static struct phy_driver ksphy_driver[] = {
 	.config_intr	= ksz9021_config_intr,
 	.suspend	= genphy_suspend,
 	.resume		= genphy_resume,
+	.soft_reset = ksz9031_soft_reset,
 	.driver		= { .owner = THIS_MODULE, },
 }, {
 	.phy_id		= PHY_ID_KSZ8873MLL,
