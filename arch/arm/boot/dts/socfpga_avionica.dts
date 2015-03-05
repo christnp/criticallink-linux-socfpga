@@ -1,0 +1,198 @@
+/*
+ *  Copyright (C) 2012 Altera Corporation <www.altera.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/dts-v1/;
+#include "socfpga.dtsi"
+
+/ {
+	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
+	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
+
+	chosen {
+		bootargs = "console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait";
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x20000000>; /* 512 MB  */
+	};
+
+	cpus {
+		cpu@1 {
+			status = "disabled";
+		};
+	};
+
+	soc {
+		clkmgr@ffd04000 {
+			clocks {
+				osc1 {
+					clock-frequency = <25000000>;
+				};
+			};
+		};
+
+		/* On DevKit Board */
+		dcan0: d_can@ffc00000 {
+			status = "okay";
+		};
+
+		/* On DevKit Board */
+		dcan1: d_can@ffc01000 {
+			status = "okay";
+		};
+
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
+			status = "okay";
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		i2c0: i2c@ffc04000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		/* on DevKit Baseboard */
+		i2c1: i2c@ffc05000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		i2c2: i2c@ffc06000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+
+		timer0@ffc08000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer1@ffc09000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer2@ffd00000 {
+			clock-frequency = <25000000>;
+		};
+
+		timer3@ffd01000 {
+			clock-frequency = <25000000>;
+		};
+
+		serial0@ffc02000 {
+			clock-frequency = <100000000>;
+		};
+
+		serial1@ffc03000 {
+			clock-frequency = <100000000>;
+		};
+
+		sysmgr@ffd08000 {
+			cpu1-start-addr = <0xffd080c4>;
+		};
+	};
+
+};
+
+&usb1 {
+	compatible = "snps,dwc2-vbus-ext";
+	status = "okay";
+};
+
+&watchdog0 {
+	status = "okay";
+};
+
+&i2c0 {
+	/* on SOM */
+	led@42 {
+		device_type = "led";
+		compatible = "ams,as3668";
+		reg = <0x42>;
+	};
+	led@30 {
+		compatible = "ti,lp5562";
+		reg = <0x30>;
+		clock-mode = /bits/8 <2>;
+
+		chan0 {
+			chan-name = "R";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan1 {
+			chan-name = "G";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan2 {
+			chan-name = "B";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan3 {
+			chan-name = "G1";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+	};
+	/* on SOM */
+	eeprom@50 {
+		compatible = "fmd,24c16";
+		reg = <0x50>;
+	};
+	/* on SOM */
+	rtc@69 {
+		device_type = "rtc";
+		compatible = "abracon,ab1803";
+		reg = <0x69>;
+	};
+};
+
+&gmac1 {
+	status = "okay";
+	phy-mode = "rgmii";
+	snps,reset-gpio = <&gpio0 28 1>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 1000000 1000000>;
+	snps,max-mtu = <4062>;
+};
