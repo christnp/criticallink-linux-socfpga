@@ -1,0 +1,356 @@
+/*
+ *  Copyright (C) 2012 Altera Corporation <www.altera.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/dts-v1/;
+#include "socfpga.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	model = "MitySOM-5CSX Altera SOCFPGA Cyclone V";
+	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
+
+	chosen {
+		bootargs = "console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait";
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x40000000>; /* 1 GB */
+	};
+
+	soc {
+		clkmgr@ffd04000 {
+			clocks {
+				osc1 {
+					clock-frequency = <25000000>;
+				};
+			};
+		};
+
+		hps_lw_bus: bus@0ff200000 {
+			compatible = "simple-bus";
+			reg = <0xFF200000 0x00200000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0 0xFF200000 0x00200000>;
+
+			aluart0: serial@1000 {
+				compatible = "altr,uart-1.0";
+				reg = <0x1000 0x40>;
+				interrupts = <0 42 4>;
+				clock-frequency = <75000000>;
+			};
+
+			aluart1: serial@1040 {
+				compatible = "altr,uart-1.0";
+				reg = <0x1040 0x40>;
+				interrupts = <0 43 4>;
+				clock-frequency = <75000000>;
+			};
+
+			aluart2: serial@1080 {
+				compatible = "altr,uart-1.0";
+				reg = <0x1080 0x40>;
+				interrupts = <0 44 4>;
+				clock-frequency = <75000000>;
+			};
+
+			gpio_altr0: gpio@2000 {
+				compatible = "altr,pio-1.0";
+				reg = <0x2000 0x20>;
+				interrupts = <0 40 4>;
+				altr,gpio-bank-width = <32>;
+				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
+				#gpio-cells = <1>;
+				gpio-controller;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+
+			gpio_altr1: gpio@2020 {
+				compatible = "altr,pio-1.0";
+				reg = <0x2020 0x20>;
+				interrupts = <0 41 4>;
+				altr,gpio-bank-width = <4>;
+				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
+				#gpio-cells = <1>;
+				gpio-controller;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+		};
+
+
+		spi0: spi@fff00000 {
+			status = "okay";
+		};
+
+		spi1: spi@fff01000 {
+			status = "okay";
+		};
+
+		/* On DevKit Board */
+		dcan0: d_can@ffc00000 {
+			status = "okay";
+		};
+
+		/* On DevKit Board */
+		dcan1: d_can@ffc01000 {
+			status = "okay";
+		};
+
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
+			status = "okay";
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		i2c0: i2c@ffc04000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		/* on DevKit Baseboard */
+		i2c1: i2c@ffc05000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		qspi: spi@ff705000 {
+			compatible = "cadence,qspi";
+                        #address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xff705000 0x1000>,
+				<0xffa00000 0x1000>;
+			interrupts = <0 151 4>;
+			master-ref-clk = <400000000>;
+			ext-decoder = <0>;  /* external decoder */
+			num-chipselect = <4>;
+			fifo-depth = <128>;
+			bus-num = <2>;
+
+			flash0: n25q00@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q00";
+				reg = <0>;      /* chip select */
+				spi-max-frequency = <10000000>;
+				m25p,fast-read;
+				page-size = <256>;
+				block-size = <16>; /* 2^16, 64KB */
+				read-delay = <4>;  /* delay value in read data capture register */
+				tshsl-ns = <50>;
+				tsd2d-ns = <50>;
+				tchsh-ns = <4>;
+				tslch-ns = <4>;
+
+				partition@qspi-preloader {
+					/* 64 KB for preloader image 0-3. */
+					label = "Preloader Image 0-3";
+					reg = <0x0 0x40000>;
+				};
+				partition@qspi-ubootenv {
+					/* 64 KB for u-Boot Env. */
+					label = "U-Boot Env";
+					reg = <0x40000 0x10000>;
+				};
+				partition@qspi-dtb {
+					/* 64 KB for DTB */
+					label = "DTB";
+					reg = <0x50000 0x10000>;
+				};
+				partition@qspi-uboot {
+					/* 512 KB for U-Boot */
+					label = "U-Boot";
+					reg = <0x60000 0x80000>;
+				};
+				partition@qspi-kernel {
+					/* 8 MB for Kernel */
+					label = "Kernel";
+					reg = <0xE0000 0x800000>;
+				};
+				partition@qspi-rootfs {
+					/* 7.125 MB for jffs2 data. */
+					label = "Flash 0 jffs2 Filesystem";
+					reg = <0x8E0000 0x720000>;
+				};
+			};
+
+			flash1: n25q00@1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q00";
+				reg = <1>;      /* chip select */
+				spi-max-frequency = <10000000>;
+				m25p,fast-read;
+				page-size = <256>;
+				block-size = <16>; /* 2^16, 64KB */
+				read-delay = <4>;  /* delay value in read data capture register */
+				tshsl-ns = <50>;
+				tsd2d-ns = <50>;
+				tchsh-ns = <4>;
+				tslch-ns = <4>;
+
+				partition@0 {
+					/* 16MB for raw data. */
+					label = "Flash 1 Filesystem";
+					reg = <0x0 0x1000000>;
+				};
+			};
+		};
+
+		timer0@ffc08000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer1@ffc09000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer2@ffd00000 {
+			clock-frequency = <25000000>;
+		};
+
+		timer3@ffd01000 {
+			clock-frequency = <25000000>;
+		};
+
+		serial0@ffc02000 {
+			clock-frequency = <100000000>;
+		};
+
+		serial1@ffc03000 {
+			clock-frequency = <100000000>;
+		};
+
+		sysmgr@ffd08000 {
+			cpu1-start-addr = <0xffd080c4>;
+		};
+	};
+
+	/* on DevKit Board */
+	gpio_keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		/* GPIO 37 */
+		button@1 {
+			label = "Switch 1";
+			linux,code = <0x101>;
+			gpios = <&gpio1 8 1>;
+			debounce-interval = <100>;
+		};
+		/* GPIO 40 */
+		button@2 {
+			label = "Switch 2";
+			linux,code = <0x102>;
+			gpios = <&gpio1 11 1>;
+			debounce-interval = <100>;
+		};
+		/* GPIO 41 */
+		button@3 {
+			label = "Switch 3";
+			linux,code = <0x103>;
+			gpios = <&gpio1 12 1>;
+			debounce-interval = <100>;
+		};
+	};
+};
+
+&usb1 {
+	compatible = "snps,dwc2-vbus-ext";
+	status = "okay";
+};
+
+&watchdog0 {
+	status = "okay";
+};
+
+&i2c0 {
+	/* on SOM */
+	led@42 {
+		device_type = "led";
+		compatible = "ams,as3668";
+		reg = <0x42>;
+	};
+	led@30 {
+		compatible = "ti,lp5562";
+		reg = <0x30>;
+		clock-mode = /bits/8 <2>;
+
+		chan0 {
+			chan-name = "R";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan1 {
+			chan-name = "G";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan2 {
+			chan-name = "B";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+
+		chan3 {
+			chan-name = "G1";
+			led-cur = /bits/ 8 <0x20>;
+			max-cur = /bits/ 8 <0x60>;
+		};
+	};
+	/* on SOM */
+	eeprom@50 {
+		compatible = "fmd,24c16";
+		reg = <0x50>;
+	};
+	/* on SOM */
+	rtc@69 {
+		device_type = "rtc";
+		compatible = "abracon,ab1803";
+		reg = <0x69>;
+	};
+};
+
+&gmac1 {
+	status = "okay";
+	phy-mode = "rgmii";
+	snps,max-mtu = <4062>;
+};
