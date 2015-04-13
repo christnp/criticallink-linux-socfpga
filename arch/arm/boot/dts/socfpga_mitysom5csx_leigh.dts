@@ -65,7 +65,7 @@
 				compatible = "altr,pio-1.0";
 				reg = <0x0040 0x20>;
 				interrupts = <0 41 4>;
-				altr,gpio-bank-width = <4>;
+				altr,gpio-bank-width = <32>;
 				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
 				#gpio-cells = <1>;
 				gpio-controller;
