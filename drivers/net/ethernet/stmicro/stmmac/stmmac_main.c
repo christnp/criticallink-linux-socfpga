@@ -49,6 +49,10 @@
 #include <linux/seq_file.h>
 #endif /* CONFIG_STMMAC_DEBUG_FS */
 #include <linux/net_tstamp.h>
+#include <linux/of.h>
+#include <linux/of_net.h>
+#include <linux/of_device.h>
+#include <linux/of_mdio.h>
 #include "stmmac_ptp.h"
 #include "stmmac.h"
 #include <linux/reset.h>
@@ -793,23 +797,36 @@ static int stmmac_init_phy(struct net_device *dev)
 	char bus_id[MII_BUS_ID_SIZE];
 	int interface = priv->plat->interface;
 	int max_speed = priv->plat->max_speed;
+	struct device_node *np = NULL;
+	struct device_node *phy_node = NULL;
 	priv->oldlink = 0;
 	priv->speed = 0;
 	priv->oldduplex = -1;
 
-	if (priv->plat->phy_bus_name)
-		snprintf(bus_id, MII_BUS_ID_SIZE, "%s-%x",
-			 priv->plat->phy_bus_name, priv->plat->bus_id);
-	else
+	if (priv->device)
+		np = priv->device->of_node;
+
+	if (np)
+		phy_node = of_parse_phandle(np, "phy-handle", 0);
+	if (phy_node) {
+		phydev = of_phy_connect(priv->dev, phy_node,
+					 &stmmac_adjust_link, 0,
+					 interface);
+		if (!phydev) {
+			pr_err("%s: of_phy_connect failed\n", __func__);
+			return -ENODEV;
+		}
+	} else {
 		snprintf(bus_id, MII_BUS_ID_SIZE, "stmmac-%x",
-			 priv->plat->bus_id);
+		 	priv->plat->bus_id);
+	 	/* comment and replace with 1 to force bus 1 TJI */
 
-	snprintf(phy_id_fmt, MII_BUS_ID_SIZE + 3, PHY_ID_FMT, bus_id,
-		 priv->plat->phy_addr);
-	pr_debug("stmmac_init_phy:  trying to attach to %s\n", phy_id_fmt);
-
-	phydev = phy_connect(dev, phy_id_fmt, &stmmac_adjust_link, interface);
-
+		snprintf(phy_id_fmt, MII_BUS_ID_SIZE + 3, PHY_ID_FMT, bus_id,
+		 	priv->plat->phy_addr);
+		pr_debug("%s:  trying to attach to %s\n", __func__, phy_id_fmt);
+	
+		phydev = phy_connect(dev, phy_id_fmt, &stmmac_adjust_link, interface);
+	}
 	if (IS_ERR(phydev)) {
 		pr_err("%s: Could not attach to PHY\n", dev->name);
 		return PTR_ERR(phydev);
@@ -833,8 +850,8 @@ static int stmmac_init_phy(struct net_device *dev)
 		phy_disconnect(phydev);
 		return -ENODEV;
 	}
-	pr_debug("stmmac_init_phy:  %s: attached to PHY (UID 0x%x)"
-		 " Link = %d\n", dev->name, phydev->phy_id, phydev->link);
+	pr_debug("%s:  %s: attached to PHY (UID 0x%x) Link = %d\n",
+			__func__, dev->name, phydev->phy_id, phydev->link);
 
 	priv->phydev = phydev;
 
@@ -2524,7 +2541,9 @@ static const struct file_operations stmmac_dma_cap_fops = {
 static int stmmac_init_fs(struct net_device *dev)
 {
 	/* Create debugfs entries */
-	stmmac_fs_dir = debugfs_create_dir(STMMAC_RESOURCE_NAME, NULL);
+	char pathname[32];
+	snprintf(pathname,31,"%s.%s",STMMAC_RESOURCE_NAME,dev->name);
+	stmmac_fs_dir = debugfs_create_dir(pathname, NULL);
 
 	if (!stmmac_fs_dir || IS_ERR(stmmac_fs_dir)) {
 		pr_err("ERROR %s, debugfs create directory failed\n",
@@ -2788,21 +2807,8 @@ struct stmmac_priv *stmmac_dvr_probe(struct device *device,
 
 	stmmac_check_pcs_mode(priv);
 
-	if (priv->pcs != STMMAC_PCS_RGMII && priv->pcs != STMMAC_PCS_TBI &&
-	    priv->pcs != STMMAC_PCS_RTBI) {
-		/* MDIO bus Registration */
-		ret = stmmac_mdio_register(ndev);
-		if (ret < 0) {
-			pr_debug("%s: MDIO bus (id: %d) registration failed",
-				 __func__, priv->plat->bus_id);
-			goto error_mdio_register;
-		}
-	}
-
 	return priv;
 
-error_mdio_register:
-	unregister_netdev(ndev);
 error_netdev_register:
 	netif_napi_del(&priv->napi);
 error_hw_init:
@@ -2829,11 +2835,10 @@ int stmmac_dvr_remove(struct net_device *ndev)
 	priv->hw->dma->stop_tx(priv->ioaddr);
 
 	stmmac_set_mac(priv->ioaddr, false);
-	if (priv->pcs != STMMAC_PCS_RGMII && priv->pcs != STMMAC_PCS_TBI &&
-	    priv->pcs != STMMAC_PCS_RTBI)
-		stmmac_mdio_unregister(ndev);
 	netif_carrier_off(ndev);
 	unregister_netdev(ndev);
+	if(priv->phydev)
+		phy_disconnect(priv->phydev);
 	if (priv->stmmac_rst)
 		reset_control_assert(priv->stmmac_rst);
 	clk_disable_unprepare(priv->stmmac_clk);
@@ -2904,9 +2909,12 @@ int stmmac_resume(struct net_device *ndev)
 		pinctrl_pm_select_default_state(priv->device);
 		/* enable the clk prevously disabled */
 		clk_prepare_enable(priv->stmmac_clk);
+#ifdef TJI_REMOVED
+		commented out until we get it at least kind of working
 		/* reset the phy so that it's ready */
 		if (priv->mii)
 			stmmac_mdio_reset(priv->mii);
+#endif 
 	}
 
 	netif_device_attach(ndev);
@@ -2925,6 +2933,7 @@ int stmmac_resume(struct net_device *ndev)
 	return 0;
 }
 #endif /* CONFIG_PM */
+
 
 /* Driver can be configured w/ and w/ both PCI and Platf drivers
  * depending on the configuration selected.

@@ -75,16 +75,7 @@
 
 /* Platfrom data for platform device structure's platform_data field */
 
-struct stmmac_mdio_bus_data {
-	int (*phy_reset)(void *priv);
-	unsigned int phy_mask;
-	int *irqs;
-	int probed_phy_irq;
-#ifdef CONFIG_OF
-	int reset_gpio, active_low;
-	u32 delays[3];
-#endif
-};
+struct device_node;
 
 struct stmmac_dma_cfg {
 	int pbl;
@@ -94,9 +85,9 @@ struct stmmac_dma_cfg {
 };
 
 struct plat_stmmacenet_data {
-	char *phy_bus_name;
 	int bus_id;
 	int phy_addr;
+	struct device_node *phy_node;
 	int interface;
 	struct stmmac_mdio_bus_data *mdio_bus_data;
 	struct stmmac_dma_cfg *dma_cfg;

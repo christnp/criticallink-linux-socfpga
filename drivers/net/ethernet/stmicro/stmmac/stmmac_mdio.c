@@ -1,27 +1,23 @@
 /*******************************************************************************
-  STMMAC Ethernet Driver -- MDIO bus implementation
-  Provides Bus interface for MII registers
+* STMMAC Ethernet Driver -- MDIO bus implementation
+* Provides Bus interface for MII registers
+*
+*  Copyright (C) 2007-2009  STMicroelectronics Ltd
 
-  Copyright (C) 2007-2009  STMicroelectronics Ltd
-
-  This program is free software; you can redistribute it and/or modify it
-  under the terms and conditions of the GNU General Public License,
-  version 2, as published by the Free Software Foundation.
-
-  This program is distributed in the hope it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-  more details.
-
-  You should have received a copy of the GNU General Public License along with
-  this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-
-  The full GNU General Public License is included in this distribution in
-  the file called "COPYING".
-
-  Author: Carl Shaw <carl.shaw@st.com>
-  Maintainer: Giuseppe Cavallaro <peppe.cavallaro@st.com>
+* This program is free software; you can redistribute it and/or modify it
+* under the terms and conditions of the GNU General Public License,
+* version 2, as published by the Free Software Foundation.
+*
+*  This program is distributed in the hope it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+* more details.
+*
+* The full GNU General Public License is included in this distribution in
+* the file called "COPYING".
+*
+* Author: Carl Shaw <carl.shaw@st.com>
+* Maintainer: Giuseppe Cavallaro <peppe.cavallaro@st.com>
 *******************************************************************************/
 
 #include <linux/mii.h>
@@ -29,13 +25,26 @@
 #include <linux/slab.h>
 #include <linux/of.h>
 #include <linux/of_gpio.h>
+#include <linux/of_device.h>
+#include <linux/of_address.h>
+#include <linux/of_mdio.h>
 
-#include <asm/io.h>
+#include <linux/io.h>
 
 #include "stmmac.h"
+#include "dwmac1000.h"
 
 #define MII_BUSY 0x00000001
 #define MII_WRITE 0x00000002
+
+struct stmmac_mdio_priv {
+	/* lock as we share register access with the mac */
+	struct mutex lock;
+	/* points to GMAC register base for this bus */
+	void __iomem *ioaddr;
+	struct mii_regs mii;    /* MII register Address offsets*/
+};
+
 
 static int stmmac_mdio_busy_wait(void __iomem *ioaddr, unsigned int mii_addr)
 {
@@ -65,27 +74,35 @@ static int stmmac_mdio_busy_wait(void __iomem *ioaddr, unsigned int mii_addr)
  */
 static int stmmac_mdio_read(struct mii_bus *bus, int phyaddr, int phyreg)
 {
-	struct net_device *ndev = bus->priv;
-	struct stmmac_priv *priv = netdev_priv(ndev);
-	unsigned int mii_address = priv->hw->mii.addr;
-	unsigned int mii_data = priv->hw->mii.data;
+	struct stmmac_mdio_priv *priv = bus->priv;
+	unsigned int mii_address = priv->mii.addr;
+	unsigned int mii_data = priv->mii.data;
 
-	int data;
-	u16 regValue = (((phyaddr << 11) & (0x0000F800)) |
+	int data = -EBUSY;
+	u16 reg_value = (((phyaddr << 11) & (0x0000F800)) |
 			((phyreg << 6) & (0x000007C0)));
-	regValue |= MII_BUSY | ((priv->clk_csr & 0xF) << 2);
+	u32 clk_reg_val = 0;
+
+	mutex_lock(&priv->lock);
+
+	/* Read clock CSR instead of keeping it in priv - shared access */
+	clk_reg_val = readl(priv->ioaddr + priv->mii.addr);
+	clk_reg_val = clk_reg_val & (0xf << 2); /* mask the clock CSR bits */
+	reg_value |= MII_BUSY | clk_reg_val;
 
 	if (stmmac_mdio_busy_wait(priv->ioaddr, mii_address))
-		return -EBUSY;
+		goto out;
 
-	writel(regValue, priv->ioaddr + mii_address);
+	writel(reg_value, priv->ioaddr + mii_address);
 
 	if (stmmac_mdio_busy_wait(priv->ioaddr, mii_address))
-		return -EBUSY;
+		goto out;
 
 	/* Read the data from the MII data register */
 	data = (int)readl(priv->ioaddr + mii_data);
 
+out:
+	mutex_unlock(&priv->lock);
 	return data;
 }
 
@@ -100,219 +117,186 @@ static int stmmac_mdio_read(struct mii_bus *bus, int phyaddr, int phyreg)
 static int stmmac_mdio_write(struct mii_bus *bus, int phyaddr, int phyreg,
 			     u16 phydata)
 {
-	struct net_device *ndev = bus->priv;
-	struct stmmac_priv *priv = netdev_priv(ndev);
-	unsigned int mii_address = priv->hw->mii.addr;
-	unsigned int mii_data = priv->hw->mii.data;
+	struct stmmac_mdio_priv *priv = bus->priv;
 
+	int rv = -EBUSY;
 	u16 value =
 	    (((phyaddr << 11) & (0x0000F800)) | ((phyreg << 6) & (0x000007C0)))
 	    | MII_WRITE;
+	u32 clk_reg_val = 0;
 
-	value |= MII_BUSY | ((priv->clk_csr & 0xF) << 2);
+	mutex_lock(&priv->lock);
+	/* change to read clock CSR instead of keeping it in priv */
+	clk_reg_val = readl(priv->ioaddr + priv->mii.addr);
+	clk_reg_val = clk_reg_val & (0xf << 2); /* mask the clock CSR bits */
+
+	value |= MII_BUSY | clk_reg_val;
 
 	/* Wait until any existing MII operation is complete */
-	if (stmmac_mdio_busy_wait(priv->ioaddr, mii_address))
-		return -EBUSY;
+	if (stmmac_mdio_busy_wait(priv->ioaddr, priv->mii.addr))
+		goto out;
 
 	/* Set the MII address register to write */
-	writel(phydata, priv->ioaddr + mii_data);
-	writel(value, priv->ioaddr + mii_address);
+	writel(phydata, priv->ioaddr + priv->mii.data);
+	writel(value, priv->ioaddr + priv->mii.addr);
 
 	/* Wait until any existing MII operation is complete */
-	return stmmac_mdio_busy_wait(priv->ioaddr, mii_address);
+	rv =  stmmac_mdio_busy_wait(priv->ioaddr, priv->mii.addr);
+out:
+	mutex_unlock(&priv->lock);
+	return rv;
 }
 
-/**
- * stmmac_mdio_reset
- * @bus: points to the mii_bus structure
- * Description: reset the MII bus
- */
-int stmmac_mdio_reset(struct mii_bus *bus)
+static struct of_device_id stmmac_mdio_match[] = {
+	{
+		.compatible = "st,stmmac-mdio",
+	},
+
+	{},
+};
+MODULE_DEVICE_TABLE(of, stmmac_mdio_match);
+
+static int stmmac_mdio_probe(struct platform_device *pdev)
 {
-#if defined(CONFIG_STMMAC_PLATFORM)
-	struct net_device *ndev = bus->priv;
-	struct stmmac_priv *priv = netdev_priv(ndev);
-	unsigned int mii_address = priv->hw->mii.addr;
-	struct stmmac_mdio_bus_data *data = priv->plat->mdio_bus_data;
+	const struct of_device_id *id =
+		of_match_device(stmmac_mdio_match, &pdev->dev);
+	struct device_node *np = pdev->dev.of_node;
+	struct resource res;
+	struct stmmac_mdio_priv *priv = NULL;
+	struct mii_bus *bus;
+	int bus_id = -1;
+	int err;
+	int phy_loop;
 
-#ifdef CONFIG_OF
-	if (priv->device->of_node) {
-		int reset_gpio, active_low;
-
-		if (data->reset_gpio < 0) {
-			struct device_node *np = priv->device->of_node;
-			if (!np)
-				return 0;
-
-			data->reset_gpio = of_get_named_gpio(np,
-						"snps,reset-gpio", 0);
-			if (data->reset_gpio < 0)
-				return 0;
-
-			data->active_low = of_property_read_bool(np,
-						"snps,reset-active-low");
-			of_property_read_u32_array(np,
-				"snps,reset-delays-us", data->delays, 3);
-		}
-
-		reset_gpio = data->reset_gpio;
-		active_low = data->active_low;
-
-		if (!gpio_request(reset_gpio, "mdio-reset")) {
-			gpio_direction_output(reset_gpio, active_low ? 1 : 0);
-			udelay(data->delays[0]);
-			gpio_set_value(reset_gpio, active_low ? 0 : 1);
-			udelay(data->delays[1]);
-			gpio_set_value(reset_gpio, active_low ? 1 : 0);
-			udelay(data->delays[2]);
-		}
+	if (!id) {
+		dev_err(&pdev->dev, "could not match device tree\n");
+		return -EINVAL;
 	}
-#endif
-
-	if (data->phy_reset) {
-		pr_debug("stmmac_mdio_reset: calling phy_reset\n");
-		data->phy_reset(priv->plat->bsp_priv);
+	if (!np) {
+		dev_err(&pdev->dev, "device does not have of_node\n");
+		return -EINVAL;
 	}
 
-	/* This is a workaround for problems with the STE101P PHY.
-	 * It doesn't complete its reset until at least one clock cycle
-	 * on MDC, so perform a dummy mdio read.
-	 */
-	writel(0, priv->ioaddr + mii_address);
-#endif
-	return 0;
-}
+	dev_dbg(&pdev->dev, "found %s compatible node\n", id->compatible);
 
-/**
- * stmmac_mdio_register
- * @ndev: net device structure
- * Description: it registers the MII bus
- */
-int stmmac_mdio_register(struct net_device *ndev)
-{
-	int err = 0;
-	struct mii_bus *new_bus;
-	int *irqlist;
-	struct stmmac_priv *priv = netdev_priv(ndev);
-	struct stmmac_mdio_bus_data *mdio_bus_data = priv->plat->mdio_bus_data;
-	int addr, found;
+	bus = devm_mdiobus_alloc_size(&pdev->dev, sizeof(*priv));
+	if (!bus) {
+		dev_err(&pdev->dev, "failed to alloc mii bus\n");
+		return -ENOMEM;
+	}
 
-	if (!mdio_bus_data)
-		return 0;
 
-	new_bus = mdiobus_alloc();
-	if (new_bus == NULL)
+	bus->parent = &pdev->dev;
+	bus->name = "stmmac_mdio",
+	bus->read = &stmmac_mdio_read;
+	bus->write = &stmmac_mdio_write;
+
+	bus->irq = devm_kmalloc_array(&pdev->dev, PHY_MAX_ADDR, sizeof(int),
+				      GFP_KERNEL);
+	if (!bus->irq)
 		return -ENOMEM;
 
-	if (mdio_bus_data->irqs) {
-		irqlist = mdio_bus_data->irqs;
-	} else {
-		for (addr = 0; addr < PHY_MAX_ADDR; addr++)
-			priv->mii_irq[addr] = PHY_POLL;
-		irqlist = priv->mii_irq;
+	for (phy_loop = 0; phy_loop < PHY_MAX_ADDR; phy_loop++)
+		bus->irq[phy_loop] = PHY_POLL;
+
+	bus_id = of_alias_get_id(np, "mdio");
+	if (0 > bus_id)
+		bus_id = 0;
+	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-%x",
+		 bus->name, bus_id);
+	dev_dbg(&pdev->dev, "DRV: bus ID %s\n", bus->id);
+
+	err = of_address_to_resource(np, 0, &res);
+	if (err < 0) {
+		dev_err(&pdev->dev, "could not obtain address information\n");
+		goto error;
 	}
 
-#ifdef CONFIG_OF
-	if (priv->device->of_node)
-		mdio_bus_data->reset_gpio = -1;
-#endif
+	dev_info(&pdev->dev,
+		 "%s@%llx", np->name, (unsigned long long)res.start);
 
-	new_bus->name = "stmmac";
-	new_bus->read = &stmmac_mdio_read;
-	new_bus->write = &stmmac_mdio_write;
-	new_bus->reset = &stmmac_mdio_reset;
-	snprintf(new_bus->id, MII_BUS_ID_SIZE, "%s-%x",
-		 new_bus->name, priv->plat->bus_id);
-	new_bus->priv = ndev;
-	new_bus->irq = irqlist;
-	new_bus->phy_mask = mdio_bus_data->phy_mask;
-	new_bus->parent = priv->device;
-	err = mdiobus_register(new_bus);
-	if (err != 0) {
-		pr_err("%s: Cannot register as MDIO bus\n", new_bus->name);
-		goto bus_register_fail;
+	priv = bus->priv;
+	priv->mii.addr = GMAC_MII_ADDR;
+	priv->mii.data = GMAC_MII_DATA;
+	priv->ioaddr = of_iomap(np, 0);
+	if (!priv->ioaddr) {
+		err = -ENOMEM;
+		goto error;
 	}
 
-	found = 0;
-	for (addr = 0; addr < PHY_MAX_ADDR; addr++) {
-		struct phy_device *phydev = new_bus->phy_map[addr];
-		if (phydev) {
-			int act = 0;
-			char irq_num[4];
-			char *irq_str;
-
-			/*
-			 * If an IRQ was provided to be assigned after
-			 * the bus probe, do it here.
-			 */
-			if ((mdio_bus_data->irqs == NULL) &&
-			    (mdio_bus_data->probed_phy_irq > 0)) {
-				irqlist[addr] = mdio_bus_data->probed_phy_irq;
-				phydev->irq = mdio_bus_data->probed_phy_irq;
-			}
-
-			/*
-			 * If we're  going to bind the MAC to this PHY bus,
-			 * and no PHY number was provided to the MAC,
-			 * use the one probed here.
-			 */
-			if (priv->plat->phy_addr == -1)
-				priv->plat->phy_addr = addr;
-
-			act = (priv->plat->phy_addr == addr);
-			switch (phydev->irq) {
-			case PHY_POLL:
-				irq_str = "POLL";
-				break;
-			case PHY_IGNORE_INTERRUPT:
-				irq_str = "IGNORE";
-				break;
-			default:
-				sprintf(irq_num, "%d", phydev->irq);
-				irq_str = irq_num;
-				break;
-			}
-			pr_info("%s: PHY ID %08x at %d IRQ %s (%s)%s\n",
-				ndev->name, phydev->phy_id, addr,
-				irq_str, dev_name(&phydev->dev),
-				act ? " active" : "");
-			found = 1;
-		}
+	/* Some device tree nodes represent only the MII registers, and
+	 * others represent the MAC and MII registers.  The 'mii_offset' field
+	 * contains the offset of the MII registers inside the mapped register
+	 * space.
+	 */
+	if (priv->mii.addr > resource_size(&res)) {
+		dev_err(&pdev->dev, "invalid register map\n");
+		err = -EINVAL;
+		goto error;
 	}
 
-	if (!found) {
-		pr_warning("%s: No PHY found\n", ndev->name);
-		mdiobus_unregister(new_bus);
-		mdiobus_free(new_bus);
-		return -ENODEV;
+#ifdef DT_PARSE_MAC_NODE
+	struct device_node *mac_node;
+	/* what we should do here is get the dt node for the mac we are
+	 * using and pull needed data from that. Until then, its in the dt!
+	 */
+	mac_node = of_parse_phandle(np, "mac-handle", 0);
+	if (!mac_node) {
+		dev_err(pdev->dev, "unable to parse mac-handle\n");
+		return -EINVAL;
 	}
+	of_node_get(mac_node);
+	of_node_put(mac_node);
+#endif /* DT_PARSE_MAC_NODE */
 
-	priv->mii = new_bus;
+	mutex_init(&priv->lock);
+
+
+	err = of_mdiobus_register(bus, np);
+	if (err) {
+		dev_err(&pdev->dev, "cannot register %s as MDIO bus\n",
+			bus->name);
+		goto error;
+	}
+	platform_set_drvdata(pdev, bus);
 
 	return 0;
 
-bus_register_fail:
-	mdiobus_free(new_bus);
+error:
+	if (priv && priv->ioaddr)
+		iounmap(priv->ioaddr);
+
 	return err;
 }
 
-/**
- * stmmac_mdio_unregister
- * @ndev: net device structure
- * Description: it unregisters the MII bus
- */
-int stmmac_mdio_unregister(struct net_device *ndev)
+
+static int stmmac_mdio_remove(struct platform_device *pdev)
 {
-	struct stmmac_priv *priv = netdev_priv(ndev);
+	struct device *device = &pdev->dev;
+	struct mii_bus *bus = dev_get_drvdata(device);
+	struct stmmac_mdio_priv *priv = bus->priv;
 
-	if (!priv->mii)
-		return 0;
+	mdiobus_unregister(bus);
 
-	mdiobus_unregister(priv->mii);
-	priv->mii->priv = NULL;
-	mdiobus_free(priv->mii);
-	priv->mii = NULL;
+	iounmap(priv->ioaddr);
+	mdiobus_free(bus);
 
 	return 0;
 }
+
+static struct platform_driver stmmac_mdio_driver = {
+	.driver = {
+		.name = "stmmac-mdio",
+		.owner = THIS_MODULE,
+		.of_match_table = stmmac_mdio_match,
+	},
+	.probe = stmmac_mdio_probe,
+	.remove = stmmac_mdio_remove,
+};
+
+module_platform_driver(stmmac_mdio_driver);
+
+MODULE_DESCRIPTION("MDIO driver for socfpga st micro mac");
+MODULE_LICENSE("GPL");
+MODULE_ALIAS("platform:stmmac-mdio");
+

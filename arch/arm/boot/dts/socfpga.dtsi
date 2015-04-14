@@ -30,6 +30,8 @@
 		timer1 = &timer1;
 		timer2 = &timer2;
 		timer3 = &timer3;
+		mdio0 = &mdio0;
+		mdio1 = &mdio1;
 	};
 
 	cpus {
@@ -503,6 +505,28 @@
 					};
 
 				};
+		};
+
+		mdio0: mdio@ff700000 {
+			compatible = "st,stmmac-mdio";
+			reg = <0xff700000 0x20>;
+			mii_address = <0x14>;
+			mii_data = <0x18>;
+			mac-handle = <&gmac0>;
+			status = "disabled";
+
+			/* add phy nodes in board file */
+		};
+
+		mdio1: mdio@ff702000 {
+			compatible = "st,stmmac-mdio";
+			reg = <0xff702000 0x20>;
+			mii_address = <0x14>;
+			mii_data = <0x18>;
+			mac-handle = <&gmac1>;
+			status = "disabled";
+
+			/* add phy nodes in board file */
 		};
 
 		gmac0: ethernet@ff700000 {

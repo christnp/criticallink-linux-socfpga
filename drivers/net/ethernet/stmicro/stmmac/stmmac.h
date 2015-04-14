@@ -79,8 +79,6 @@ struct stmmac_priv {
 	int oldduplex;
 	unsigned int flow_ctrl;
 	unsigned int pause;
-	struct mii_bus *mii;
-	int mii_irq[PHY_MAX_ADDR];
 
 	struct stmmac_extra_stats xstats ____cacheline_aligned_in_smp;
 	struct plat_stmmacenet_data *plat;

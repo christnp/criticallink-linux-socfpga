@@ -86,27 +86,22 @@ static int stmmac_probe_config_dt(struct platform_device *pdev,
 
 	*mac = of_get_mac_address(np);
 	plat->interface = of_get_phy_mode(np);
+	plat->phy_node = of_parse_phandle(np, "phy-handle", 0);
 
+
+	/* Get the device tree node for the phy */
 	/* Get max speed of operation from device tree */
 	if (of_property_read_u32(np, "max-speed", &plat->max_speed))
 		plat->max_speed = -1;
-
-	plat->bus_id = of_alias_get_id(np, "ethernet");
-	if (plat->bus_id < 0)
-		plat->bus_id = 0;
 
 	/* Default to phy auto-detection */
 	plat->phy_addr = -1;
 
 	/* "snps,phy-addr" is not a standard property. Mark it as deprecated
-	 * and warn of its use. Remove this when phy node support is added.
-	 */
+ 	* and warn of its use. Remove this when phy node support is added.
+ 	*/
 	if (of_property_read_u32(np, "snps,phy-addr", &plat->phy_addr) == 0)
 		dev_warn(&pdev->dev, "snps,phy-addr property is deprecated\n");
-
-	plat->mdio_bus_data = devm_kzalloc(&pdev->dev,
-					   sizeof(struct stmmac_mdio_bus_data),
-					   GFP_KERNEL);
 
 	plat->force_sf_dma_mode = of_property_read_bool(np, "snps,force_sf_dma_mode");
 
@@ -176,7 +171,7 @@ static int stmmac_probe_config_dt(struct platform_device *pdev,
  * @pdev: platform device pointer
  * Description: platform_device probe function. It allocates
  * the necessary resources and invokes the main to init
- * the net device, register the mdio bus etc.
+ * the net device, attach the mdio bus etc.
  */
 static int stmmac_pltfr_probe(struct platform_device *pdev)
 {

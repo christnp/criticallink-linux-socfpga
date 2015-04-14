@@ -1,0 +1,22 @@
+* STMicroelectronics 10/100/1000 Ethernet driver (GMAC) - MDIO interface
+
+Required properties:
+- compatible: Should be "st,stmmac-mdio"
+- reg: Address and length of the register set for the device
+- phy-mode: phy nodes
+- mii_address: offset of MII address register
+- mii_data: offset of MII data register
+- mac-handle = Handle of MAC to use to access this MDIO bus (not implemented... uses reg property)
+
+Examples:
+
+mdio0: mdio@ff700000 {                                                                                          
+	compatible = "stmmac,stmmac-mdio";
+	reg = <0xff700000 0x20>;
+	mii_address = <0x14>;
+	mii_data = <0x18>;
+	mac-handle = <&gmac0>;
+	status = "disabled";
+
+	/* add phy nodes in board file */
+};

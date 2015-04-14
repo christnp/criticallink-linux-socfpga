@@ -122,8 +122,20 @@
 
 		gmac1: ethernet@ff702000 {
 			status = "okay";
+			phy-handle = <&phy0>;
 			phy-mode = "rgmii";
 			snps,max-mtu = <4062>;
+		};
+
+		mdio1: mdio@ff702000 {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: ethernet-phy@0 {
+				reg = <0x3>;
+				device_type = "ethernet-phy";
+				compatible = "ethernet-phy-ieee802.3-c22";
+			};
 		};
 	};
 };

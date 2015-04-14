@@ -1,0 +1,90 @@
+#include "socfpga_mitysomcvse.dtsi"
+/ {
+
+	soc {
+		
+		gmac0: ethernet@ff700000 {
+			status = "okay";
+			phy-mode = "mii";
+			phy-handle = <&phy1>;
+			snps,max-mtu = <4062>;
+		};
+
+		gmac1: ethernet@ff702000  {
+			status = "okay";
+			phy-mode = "rgmii";
+			phy-handle = <&phy0>;
+			snps,max-mtu = <4062>;
+		};
+
+		mdio1: mdio@ff702000 {
+			status = "okay";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				phy0: ethernet-phy@0 {
+					reg = <0x2>;
+					device_type = "ethernet-phy";
+					compatible = "ethernet-phy-ieee802.3-c22";
+					/*
+					rxc-skew-ps = <>;
+					rxdv-skew-ps = <>;
+					txc-skew-ps = <>;
+					txen-skew-ps = <>;
+					*/	
+				};
+
+				phy1: ethernet-phy@1 {
+					reg = <0x3>;
+					device_type = "ethernet-phy";
+					compatible = "ethernet-phy-ieee802.3-c22";
+					/*
+					rxc-skew-ps = <>;
+					rxdv-skew-ps = <>;
+					txc-skew-ps = <>;
+					txen-skew-ps = <>;
+					*/	
+				};
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
+			status = "okay";
+		};
+
+		i2c0: i2c@ffc04000 {
+			i2c-sda-hold-time-ns = <500>;
+		};
+
+		i2c1: i2c@ffc05000 {
+			i2c-sda-hold-time-ns = <500>;
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		i2c2: i2c@ffc06000 {
+			i2c-sda-hold-time-ns = <500>;
+			speed-mode = <0>;
+			status = "okay";
+		};
+	};
+};
