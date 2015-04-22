@@ -65,7 +65,7 @@
 				compatible = "altr,pio-1.0";
 				reg = <0x0040 0x20>;
 				interrupts = <0 41 4>;
-				altr,gpio-bank-width = <32>;
+				altr,gpio-bank-width = <26>;
 				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
 				#gpio-cells = <1>;
 				gpio-controller;
@@ -77,84 +77,91 @@
 				compatible = "altr,uart-1.0";
 				reg = <0x1000 0x40>;
 				interrupts = <0 42 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart1: serial@1040 {
 				compatible = "altr,uart-1.0";
 				reg = <0x1040 0x40>;
 				interrupts = <0 43 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart2: serial@1080 {
 				compatible = "altr,uart-1.0";
 				reg = <0x1080 0x40>;
 				interrupts = <0 44 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart3: serial@10C0 {
 				compatible = "altr,uart-1.0";
 				reg = <0x10C0 0x40>;
 				interrupts = <0 45 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart4: serial@2000 {
 				compatible = "altr,uart-1.0";
 				reg = <0x2000 0x40>;
 				interrupts = <0 46 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart5: serial@2040 {
 				compatible = "altr,uart-1.0";
 				reg = <0x2040 0x40>;
 				interrupts = <0 47 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart6: serial@2080 {
 				compatible = "altr,uart-1.0";
 				reg = <0x2080 0x40>;
 				interrupts = <0 48 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart7: serial@20C0 {
 				compatible = "altr,uart-1.0";
 				reg = <0x20C0 0x40>;
 				interrupts = <0 49 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart8: serial@3000 {
 				compatible = "altr,uart-1.0";
 				reg = <0x3000 0x40>;
 				interrupts = <0 50 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart9: serial@3040 {
 				compatible = "altr,uart-1.0";
 				reg = <0x3040 0x40>;
 				interrupts = <0 51 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart10: serial@3080 {
 				compatible = "altr,uart-1.0";
 				reg = <0x3080 0x40>;
 				interrupts = <0 52 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
 			};
 
 			aluart11: serial@30C0 {
 				compatible = "altr,uart-1.0";
 				reg = <0x30C0 0x40>;
 				interrupts = <0 53 4>;
-				clock-frequency = <75000000>;
+				clock-frequency = <100000000>;
+			};
+
+			aluart12: serial@4000 {
+				compatible = "altr,uart-1.0";
+				reg = <0x4000 0x40>;
+				interrupts = <0 54 4>;
+				clock-frequency = <100000000>;
 			};
 		};
 
@@ -325,33 +332,6 @@
 		};
 	};
 
-	/* on DevKit Board */
-	gpio_keys {
-		compatible = "gpio-keys";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		/* GPIO 37 */
-		button@1 {
-			label = "Switch 1";
-			linux,code = <0x101>;
-			gpios = <&gpio1 8 1>;
-			debounce-interval = <100>;
-		};
-		/* GPIO 40 */
-		button@2 {
-			label = "Switch 2";
-			linux,code = <0x102>;
-			gpios = <&gpio1 11 1>;
-			debounce-interval = <100>;
-		};
-		/* GPIO 41 */
-		button@3 {
-			label = "Switch 3";
-			linux,code = <0x103>;
-			gpios = <&gpio1 12 1>;
-			debounce-interval = <100>;
-		};
-	};
 };
 
 &usb1 {
