@@ -253,23 +253,23 @@ static int map_dma_buffers(struct dw_spi *dws)
 			dws->rx_dma = dws->cur_transfer->rx_dma;
 	} else {
 		if (dws->cur_transfer->tx_buf != NULL) {
-			dws->tx_dma = dma_map_single(dws->master->dev,
+			dws->tx_dma = dma_map_single(&dws->master->dev,
 					(void *)dws->cur_transfer->tx_buf,
 					dws->cur_transfer->len,
 					DMA_TO_DEVICE);
-			if (dma_mapping_error(dws->master->dev, dws->tx_dma)) {
+			if (dma_mapping_error(&dws->master->dev, dws->tx_dma)) {
 				dev_err(&dws->master->dev, "dma_map_single Tx failed\n");
 				return 0;
 			}
 		}
 
 		if (dws->cur_transfer->rx_buf != NULL) {
-			dws->rx_dma = dma_map_single(dws->master->_dev,
+			dws->rx_dma = dma_map_single(&dws->master->dev,
 					dws->cur_transfer->rx_buf,
 					dws->cur_transfer->len, DMA_FROM_DEVICE);
-			if (dma_mapping_error(dws->master->dev, dws->rx_dma)) {
+			if (dma_mapping_error(&dws->master->dev, dws->rx_dma)) {
 				dev_err(&dws->master->dev, "dma_map_single Rx failed\n");
-				dma_unmap_single(dws->master->dev, dws->tx_dma,
+				dma_unmap_single(&dws->master->dev, dws->tx_dma,
 						dws->cur_transfer->len, DMA_TO_DEVICE);
 				return 0;
 			}
