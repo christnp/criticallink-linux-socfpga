@@ -1,0 +1,48 @@
+/*
+ *  Copyright (C) 2012 Altera Corporation <www.altera.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "socfpga_mitysom5csx_devkit.dts"
+
+/ {
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x80000000>; /* 2GB */
+	};
+};
+
+&flash1 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "n25q256";
+	reg = <1>;      /* chip select */
+	spi-max-frequency = <108000000>;
+	m25p,fast-read;
+	page-size = <256>;
+	block-size = <16>; /* 2^16, 64KB */
+	read-delay = <4>;  /* delay value in read data capture register */
+	tshsl-ns = <50>;
+	tsd2d-ns = <50>;
+	tchsh-ns = <4>;
+	tslch-ns = <4>;
+
+	partition@0 {
+		/* 32MB for raw data. */
+		label = "Data";
+		reg = <0x0 0x2000000>;
+	};
+};
