@@ -1,4 +1,4 @@
-#include "socfpga_mitysom5csx.dtsi"
+#include "socfpga_mitysom5cse.dtsi"
 #include <dt-bindings/interrupt-controller/irq.h>
 
 / {
@@ -98,7 +98,7 @@
 				compatible = "altr,pio-1.0";
 				reg = <0x0080 0x20>;
 				interrupts = <0 43 4>;
-				altr,gpio-bank-width = <3>;
+				altr,gpio-bank-width = <29>;
 				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
 				#gpio-cells = <1>;
 				gpio-controller;
