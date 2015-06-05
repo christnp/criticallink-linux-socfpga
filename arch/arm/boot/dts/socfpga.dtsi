@@ -590,6 +590,7 @@
 			reg = <0xffc04000 0x1000>;
 			clocks = <&l4_sp_clk>;
 			interrupts = <0 158 0x4>;
+			i2c-sda-hold-time-ns = <400>;
 			status = "disabled";
 		};
 
@@ -600,6 +601,7 @@
 			reg = <0xffc05000 0x1000>;
 			clocks = <&l4_sp_clk>;
 			interrupts = <0 159 0x4>;
+			i2c-sda-hold-time-ns = <400>;
 			status = "disabled";
 		};
 
@@ -610,6 +612,7 @@
 			reg = <0xffc06000 0x1000>;
 			clocks = <&l4_sp_clk>;
 			interrupts = <0 160 0x4>;
+			i2c-sda-hold-time-ns = <400>;
 			status = "disabled";
 		};
 
@@ -620,6 +623,7 @@
 			reg = <0xffc07000 0x1000>;
 			clocks = <&l4_sp_clk>;
 			interrupts = <0 161 0x4>;
+			i2c-sda-hold-time-ns = <400>;
 			status = "disabled";
 		};
 
