@@ -222,12 +222,12 @@
 		};
 
 		/* On DevKit Board */
-		dcan0: d_can@ffc00000 {
+		can0: can@ffc00000 {
 			status = "okay";
 		};
 
 		/* On DevKit Board */
-		dcan1: d_can@ffc01000 {
+		can1: can@ffc01000 {
 			status = "okay";
 		};
 
