@@ -163,6 +163,10 @@
 					max-cur = /bits/ 8 <0x60>;
 				};
 			};
+			temp@4C {
+				compatible = "lm73";
+				reg = <0x4C>;
+			};
 			eeprom@50 {
 				compatible = "fmd,24c16";
 				reg = <0x50>;
