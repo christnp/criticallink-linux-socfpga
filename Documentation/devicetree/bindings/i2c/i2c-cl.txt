@@ -1,0 +1,24 @@
+* I2C driver for Critical Link SOC FPGA SPI Controller
+
+Required properties:
+- compatible : Should be "cl,i2c-1.0".
+- reg : Contains one entry, which is a tuple consisting of a
+	physical address and length.  The entry is the address and
+	length of the controller register set.
+- interrupts : Unit interrupt specifier for the controller interrupt.
+- master-ref-clk : Specifies the frequency of the controller input clock.
+- clk-frequency : The requested frequency of SCL
+
+Example:
+
+		i2c5: i2c@ff230000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "cl,i2c-1.0";
+			reg = <0xff230000 0x1000>;
+			interrupts = <0 159 4>;
+			status = "okay";
+
+			clk-frequency = <100000>;
+			master-ref-clk = <50000000>;
+		};
