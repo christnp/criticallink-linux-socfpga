@@ -400,6 +400,7 @@
 
 &usb1 {
 	compatible = "snps,dwc2-vbus-ext";
+	dma-desc-enable = <0>;
 	status = "okay";
 };
 
