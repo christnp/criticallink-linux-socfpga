@@ -120,14 +120,14 @@
 					reg = <0x60000 0x80000>;
 				};
 				partition@qspi-kernel {
-					/* 8 MB for Kernel */
+					/* 4 MB for Kernel */
 					label = "Kernel";
-					reg = <0xE0000 0x800000>;
+					reg = <0xE0000 0x400000>;
 				};
 				partition@qspi-rootfs {
-					/* 7.125 MB for jffs2 data. */
-					label = "Flash 0 jffs2 Filesystem";
-					reg = <0x8E0000 0x720000>;
+					/* 12.125 MB for initramfs data. */
+					label = "Flash 0 Initramfs Filesystem";
+					reg = <0x4E0000 0xb20000>;
 				};
 			};
 
@@ -146,10 +146,16 @@
 				tchsh-ns = <4>;
 				tslch-ns = <4>;
 
-				partition@0 {
-					/* 16MB for raw data. */
-					label = "Flash 1 Filesystem";
-					reg = <0x0 0x1000000>;
+				partition@qspi-fpga {
+					/* 2MB for gzipped RBF data. */
+					label = "Flash 1 RBF (compressed)";
+					reg = <0x0 0x200000>;
+				};
+
+				partition@0qspi-userfs {
+					/* 14MB for user data. */
+					label = "Flash 1 jffs2 Filesystem";
+					reg = <0x200000 0xE00000>;
 				};
 			};
 		};
