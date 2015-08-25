@@ -65,7 +65,7 @@
 				compatible = "altr,pio-1.0";
 				reg = <0x0040 0x20>;
 				interrupts = <0 41 4>;
-				altr,gpio-bank-width = <26>;
+				altr,gpio-bank-width = <32>;
 				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
 				#gpio-cells = <1>;
 				gpio-controller;
@@ -163,9 +163,44 @@
 				interrupts = <0 54 4>;
 				clock-frequency = <100000000>;
 			};
+			aluart13: serial@4040 {
+				compatible = "altr,uart-1.0";
+				reg = <0x4040 0x40>;
+				interrupts = <0 55 4>;
+				clock-frequency = <100000000>;
+			};
+
+			aluart14: serial@4080 {
+				compatible = "altr,uart-1.0";
+				reg = <0x4080 0x40>;
+				interrupts = <0 56 4>;
+				clock-frequency = <100000000>;
+			};
+
+			aluart15: serial@40C0 {
+				compatible = "altr,uart-1.0";
+				reg = <0x40C0 0x40>;
+				interrupts = <0 57 4>;
+				clock-frequency = <100000000>;
+			};
+
+			aluart16: serial@5000 {
+				compatible = "altr,uart-1.0";
+				reg = <0x5000 0x40>;
+				interrupts = <0 58 4>;
+				clock-frequency = <100000000>;
+			};
+
+			aluart17: serial@5040 {
+				compatible = "altr,uart-1.0";
+				reg = <0x5040 0x40>;
+				interrupts = <0 59 4>;
+				clock-frequency = <100000000>;
+			};
 		};
 
 		spi0: spi@fff00000 {
+			num-chipselect = <6>;
 			status = "okay";
 			spidev@0 {
 				compatible = "spidev";
@@ -188,12 +223,25 @@
 			spidev@3 {
 				compatible = "spidev";
 				reg = <3>;
+				spi-max-frequency = <100000000>;
+				enable-dma = <1>;
+			};
+			spidev@4 {
+				compatible = "spidev";
+				reg = <4>;
+				spi-max-frequency = <100000000>;
+				enable-dma = <1>;
+			};
+			spidev@5 {
+				compatible = "spidev";
+				reg = <5>;
 				spi-max-frequency = <100000000>;
 				enable-dma = <1>;
 			};
 		};
 
 		spi1: spi@fff01000 {
+			num-chipselect = <6>;
 			status = "okay";
 			spidev@0 {
 				compatible = "spidev";
@@ -216,6 +264,18 @@
 			spidev@3 {
 				compatible = "spidev";
 				reg = <3>;
+				spi-max-frequency = <100000000>;
+				enable-dma = <1>;
+			};
+			spidev@4 {
+				compatible = "spidev";
+				reg = <4>;
+				spi-max-frequency = <100000000>;
+				enable-dma = <1>;
+			};
+			spidev@5 {
+				compatible = "spidev";
+				reg = <5>;
 				spi-max-frequency = <100000000>;
 				enable-dma = <1>;
 			};
