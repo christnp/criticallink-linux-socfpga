@@ -68,6 +68,13 @@
 			phy-handle = <&phy1>;
 			phy-mode = "gmii";
 			snps,max-mtu = <4062>;
+			altr,emac-splitter = <&hps_emac_interface_splitter_0>;
+		};
+
+		hps_emac_interface_splitter_0: splitter@0xff2013000 {
+			compatible = "altr,emac-splitter-1.0";
+			reg = <0xFF213000 0x00000004>;
+			clocks = < &h2f_user0_clk >;
 		};
 
 		mdio0: mdio@ff700000 {
