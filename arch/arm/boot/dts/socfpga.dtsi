@@ -901,7 +901,8 @@
 		};
 
 		rst: rstmgr@ffd05000 {
-			compatible = "altr,rst-mgr", "syscon";
+			#reset-cells = <1>;
+			compatible = "altr,rst-mgr";
 			reg = <0xffd05000 0x1000>;
 		};
 
