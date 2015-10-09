@@ -255,6 +255,18 @@
 			status = "okay";
 		};
 
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
+			status = "okay";
+		};
+
 		gpio3: gpio@ff220000 {
 			compatible = "cl,camio-1.0";
 			reg = <0xff220000 0x20>;
@@ -302,6 +314,18 @@
 		    width = <32>;
 		    level_trigger = <0>;
 		    #gpio-cells = <2>;
+		    gpio-controller;
+		    #interrupt-cells = <1>;
+		    interrupt-controller;
+		};
+
+		io1_pio: altr_pio@ff226000 {
+		    compatible = "altr,pio-1.0";
+		    reg = <0xff226000 0x10>;
+		    #interrupts = <0 45 4>;
+		    width = <1>;
+		    level_trigger = <0>;
+		    #gpio-cells = <1>;
 		    gpio-controller;
 		    #interrupt-cells = <1>;
 		    interrupt-controller;
