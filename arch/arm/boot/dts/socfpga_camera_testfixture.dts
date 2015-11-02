@@ -1,0 +1,118 @@
+#include "socfpga_mitysom5csx.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	aliases {
+		/* this allow the ethaddr uboot environmnet variable contents
+		 * to be added to the gmac1 device tree blob.
+		 */
+		ethernet0 = &gmac1;
+	};
+
+	soc {
+		i2c1: i2c@ffc05000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		hps_lw_bus: bus@0ff200000 {
+			status = "okay";
+
+			sysid_qsys: sysid@000000 {
+				compatible = "altr,sysid-1.0";
+				reg = <0x000000 0x08>;
+			};
+
+			sen_loopback_1: altr_pio@1000 {
+			    compatible = "altr,pio-1.0";
+			    reg = <0x1000 0x10>;
+			    #interrupts = <0 45 4>;
+			    width = <32>;
+			    level_trigger = <0>;
+			    #gpio-cells = <1>;
+			    gpio-controller;
+			    #interrupt-cells = <1>;
+			    interrupt-controller;
+			};
+
+			sen_loopback_2: altr_pio@2000 {
+			    compatible = "altr,pio-1.0";
+			    reg = <0x2000 0x10>;
+			    #interrupts = <0 45 4>;
+			    width = <32>;
+			    level_trigger = <0>;
+			    #gpio-cells = <1>;
+			    gpio-controller;
+			    #interrupt-cells = <1>;
+			    interrupt-controller;
+			};
+
+			sen_loopback_3: altr_pio@3000 {
+			    compatible = "altr,pio-1.0";
+			    reg = <0x3000 0x10>;
+			    #interrupts = <0 45 4>;
+			    width = <8>;
+			    level_trigger = <0>;
+			    #gpio-cells = <1>;
+			    gpio-controller;
+			    #interrupt-cells = <1>;
+			    interrupt-controller;
+			};
+
+			sen_power_1: altr_pio@4000 {
+			    compatible = "altr,pio-1.0";
+			    reg = <0x4000 0x10>;
+			    #interrupts = <0 45 4>;
+			    width = <32>;
+			    level_trigger = <0>;
+			    #gpio-cells = <1>;
+			    gpio-controller;
+			    #interrupt-cells = <1>;
+			    interrupt-controller;
+			};
+
+			sen_power_2: altr_pio@5000 {
+			    compatible = "altr,pio-1.0";
+			    reg = <0x5000 0x10>;
+			    #interrupts = <0 45 4>;
+			    width = <10>;
+			    level_trigger = <0>;
+			    #gpio-cells = <1>;
+			    gpio-controller;
+			    #interrupt-cells = <1>;
+			    interrupt-controller;
+			};
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		gmac1: ethernet@ff702000 {
+			status = "okay";
+			phy-handle = <&phy0>;
+			phy-mode = "rgmii";
+			snps,max-mtu = <4062>;
+		};
+
+		mdio1: mdio@ff702000 {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: ethernet-phy@0 {
+				reg = <0x3>;
+				device_type = "ethernet-phy";
+				compatible = "ethernet-phy-ieee802.3-c22";
+			};
+		};
+	};
+};
