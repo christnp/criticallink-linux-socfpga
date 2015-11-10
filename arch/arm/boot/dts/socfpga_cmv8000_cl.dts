@@ -1,0 +1,276 @@
+/*
+ *  Copyright (C) 2012 Altera Corporation <www.altera.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/dts-v1/;
+/include/ "socfpga.dtsi"
+
+/ {
+	model = "SOC Camera";
+	compatible = "altr,socfpga-cyclone5", "altr,socfpga";
+
+	chosen {
+		bootargs = "console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait";
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x40000000>; /* 1 GB */
+	};
+
+	aliases {
+		/* this allow the ethaddr uboot environmnet variable contents
+		 * to be added to the gmac1 device tree blob.
+		 */
+		ethernet0 = &gmac1;
+	};
+
+	soc {
+		clkmgr@ffd04000 {
+			clocks {
+				osc1 {
+					clock-frequency = <25000000>;
+				};
+			};
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		i2c0: i2c@ffc04000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		i2c1: i2c@ffc05000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		qspi: spi@ff705000 {
+			compatible = "cadence,qspi";
+                        #address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xff705000 0x1000>,
+				<0xffa00000 0x1000>;
+			interrupts = <0 151 4>;
+			master-ref-clk = <400000000>;
+			ext-decoder = <0>;  /* external decoder */
+			num-chipselect = <4>;
+			fifo-depth = <128>;
+			bus-num = <2>;
+
+			flash0: n25q00@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q00";
+				reg = <0>;      /* chip select */
+				spi-max-frequency = <10000000>;
+				m25p,fast-read;
+				page-size = <256>;
+				block-size = <16>; /* 2^16, 64KB */
+				read-delay = <4>;  /* delay value in read data capture register */
+				tshsl-ns = <50>;
+				tsd2d-ns = <50>;
+				tchsh-ns = <4>;
+				tslch-ns = <4>;
+
+				partition@qspi-preloader {
+					/* 64 KB for preloader image 0-3. */
+					label = "Preloader Image 0-3";
+					reg = <0x0 0x40000>;
+				};
+				partition@qspi-ubootenv {
+					/* 64 KB for u-Boot Env. */
+					label = "U-Boot Env";
+					reg = <0x40000 0x10000>;
+				};
+				partition@qspi-dtb {
+					/* 64 KB for DTB */
+					label = "DTB";
+					reg = <0x50000 0x10000>;
+				};
+				partition@qspi-uboot {
+					/* 512 KB for U-Boot */
+					label = "U-Boot";
+					reg = <0x60000 0x80000>;
+				};
+				partition@qspi-kernel {
+					/* 4 MB for Kernel */
+					label = "Kernel";
+					reg = <0xE0000 0x400000>;
+				};
+				partition@qspi-rootfs {
+					/* 12.125 MB for initramfs data. */
+					label = "Flash 0 Initramfs Filesystem";
+					reg = <0x4E0000 0xb20000>;
+				};
+			};
+
+			flash1: n25q00@1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "n25q00";
+				reg = <1>;      /* chip select */
+				spi-max-frequency = <10000000>;
+				m25p,fast-read;
+				page-size = <256>;
+				block-size = <16>; /* 2^16, 64KB */
+				read-delay = <4>;  /* delay value in read data capture register */
+				tshsl-ns = <50>;
+				tsd2d-ns = <50>;
+				tchsh-ns = <4>;
+				tslch-ns = <4>;
+
+				partition@qspi-fpga {
+					/* 2MB for gzipped RBF data. */
+					label = "Flash 1 RBF (compressed)";
+					reg = <0x0 0x200000>;
+				};
+
+				partition@0qspi-userfs {
+					/* 14MB for user data. */
+					label = "Flash 1 jffs2 Filesystem";
+					reg = <0x200000 0xE00000>;
+				};
+			};
+		};
+
+		clspi: spi@ff201000 {
+			compatible = "cl,spi-1.0";
+                        #address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xff201000 0x0100>;
+			interrupts = <0 42 4>;
+			master-ref-clk = <50000000>;
+			num-chipselect = <8>;
+			bus-num = <3>;
+
+			spidev@1 {
+				spi-max-frequency = <2000000>;
+				reg = <0>;
+				compatible = "linux,spidev";
+			};
+		};
+
+		sldhub: debugger {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "altr,sld-hub";
+			reg = <0xFF221000 0x80>;
+		};
+
+		timer0@ffc08000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer1@ffc09000 {
+			clock-frequency = <100000000>;
+		};
+
+		timer2@ffd00000 {
+			clock-frequency = <25000000>;
+		};
+
+		timer3@ffd01000 {
+			clock-frequency = <25000000>;
+		};
+
+		serial0@ffc02000 {
+			clock-frequency = <100000000>;
+		};
+
+		serial1@ffc03000 {
+			clock-frequency = <100000000>;
+		};
+
+		sysmgr@ffd08000 {
+			cpu1-start-addr = <0xffd080c4>;
+		};
+
+		usb1: usb@ffb40000 {
+			status = "okay";
+		};
+
+		watchdog0: wd@ffd02000 {
+			status = "okay";
+		};
+
+		gpio3: gpio@ff220000 {
+			compatible = "cl,camio-1.0";
+			reg = <0xff220000 0x20>;
+			interrupts = <0 40 4>;
+			virtual_irq_start = <342>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		streamer0: streamer@20000000 {
+			compatible = "uio,irq";
+			interrupts = <0 41 4>;
+		};
+	};
+
+};
+
+&i2c0 {
+	/* on SOM */
+	led@42 {
+		device_type = "led";
+		compatible = "ams,as3668";
+		reg = <0x42>;
+	};
+	/* on SOM */
+	eeprom@50 {
+		compatible = "fmd,24c16";
+		reg = <0x50>;
+	};
+	/* on SOM */
+	rtc@69 {
+		device_type = "rtc";
+		compatible = "abracon,ab1803";
+		reg = <0x69>;
+	};
+};
+
+&gmac1 {
+	phy-mode = "rgmii";
+	snps,phy-addr = <0xffffffff>; /* probe for phy addr */
+	rxd0-skew-ps = <0>;
+	rxd0-skew-ps = <0>;
+	rxd1-skew-ps = <0>;
+	rxd2-skew-ps = <0>;
+	rxd3-skew-ps = <0>;
+	txen-skew-ps = <0>;
+	txc-skew-ps = <2600>;
+	rxdv-skew-ps = <0>;
+	rxc-skew-ps = <2000>;
+	snps,max-mtu = <4062>;
+	status = "disabled";
+};

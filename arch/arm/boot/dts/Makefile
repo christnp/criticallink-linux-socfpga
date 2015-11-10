@@ -215,8 +215,12 @@ dtb-$(CONFIG_ARCH_SHMOBILE) += emev2-kzm9d.dtb \
 dtb-$(CONFIG_ARCH_SHMOBILE_MULTI) += emev2-kzm9d-reference.dtb
 dtb-$(CONFIG_ARCH_SOCFPGA) += socfpga_cyclone5.dtb \
 	socfpga_arria5.dtb \
-	socfpga_cmv8000_cam.dtb \
-	socfpga_camera.dtb \
+	socfpga_cis1910_cl.dtb \
+	socfpga_cis1910_gige.dtb \
+	socfpga_cis2521_cl.dtb \
+	socfpga_cis2521_gige.dtb \
+	socfpga_cmv8000_cl.dtb \
+	socfpga_cmv8000_gige.dtb \
 	socfpga_ice.dtb \
 	socfpga_mitysom5csx_devkit.dtb \
 	socfpga_mitysom5csx_niagara.dtb \
