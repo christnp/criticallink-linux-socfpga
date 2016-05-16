@@ -3,18 +3,37 @@
 
 	soc {
 		
+		hps_lw_bus: bus@0ff200000 {
+			status = "okay";
+
+			sysid_qsys: sysid@000000 {
+				compatible = "altr,sysid-1.0";
+				reg = <0x000000 0x08>;
+			};
+
+			hps_emac_interface_splitter_0: splitter@0x000008 {
+				compatible = "altr,emac-splitter-1.0";
+				reg = <0x000008 0x00000004>;
+				clocks = < &h2f_user0_clk >;
+			};
+		};
+
 		gmac0: ethernet@ff700000 {
 			status = "okay";
-			phy-mode = "mii";
+			phy-mode = "rgmii";
 			phy-handle = <&phy1>;
 			snps,max-mtu = <4062>;
+			max-speed = <100>;
+			altr,emac-splitter = <&hps_emac_interface_splitter_0>;
 		};
+		
 
 		gmac1: ethernet@ff702000  {
 			status = "okay";
 			phy-mode = "rgmii";
 			phy-handle = <&phy0>;
 			snps,max-mtu = <4062>;
+			max-speed = <100>;
 		};
 
 		mdio1: mdio@ff702000 {
@@ -25,24 +44,12 @@
 					reg = <0x2>;
 					device_type = "ethernet-phy";
 					compatible = "ethernet-phy-ieee802.3-c22";
-					/*
-					rxc-skew-ps = <>;
-					rxdv-skew-ps = <>;
-					txc-skew-ps = <>;
-					txen-skew-ps = <>;
-					*/	
 				};
 
 				phy1: ethernet-phy@1 {
 					reg = <0x3>;
 					device_type = "ethernet-phy";
 					compatible = "ethernet-phy-ieee802.3-c22";
-					/*
-					rxc-skew-ps = <>;
-					rxdv-skew-ps = <>;
-					txc-skew-ps = <>;
-					txen-skew-ps = <>;
-					*/	
 				};
 		};
 
