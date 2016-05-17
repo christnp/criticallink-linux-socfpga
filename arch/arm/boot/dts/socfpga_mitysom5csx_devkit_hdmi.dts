@@ -1,0 +1,158 @@
+#include "socfpga_mitysom5csx.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	aliases {
+		/* this allow the ethaddr uboot environmnet variable contents
+		 * to be added to the gmac1 device tree blob.
+		 */
+		ethernet0 = &gmac1;
+	};
+
+	soc {
+		can0: can@ffc00000 {
+			status = "okay";
+		};
+
+		can1: can@ffc01000 {
+			status = "okay";
+		};
+
+		gpio_keys {
+			compatible = "gpio-keys";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			/* GPIO 37 */
+			button@1 {
+				label = "Switch 1";
+				linux,code = <0x101>;
+				gpios = <&gpio1 8 1>;
+				debounce-interval = <100>;
+			};
+			/* GPIO 40 */
+			button@2 {
+				label = "Switch 2";
+				linux,code = <0x102>;
+				gpios = <&gpio1 11 1>;
+				debounce-interval = <100>;
+			};
+			/* GPIO 41 */
+			button@3 {
+				label = "Switch 3";
+				linux,code = <0x103>;
+				gpios = <&gpio1 12 1>;
+				debounce-interval = <100>;
+			};
+		};
+
+		i2c1: i2c@ffc05000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+		i2c2: i2c@ffc06000 {
+			speed-mode = <0>;
+			status = "okay";
+			i2c-sda-hold-time-ns = <0x258>;
+			i2c-sda-falling-time-ns = <0x12c>;
+			i2c-scl-falling-time-ns = <0x12c>;
+		};
+
+		hps_lw_bus: bus@0ff200000 {
+			status = "okay";
+
+			sysid_qsys: sysid@000000 {
+				compatible = "altr,sysid-1.0";
+				reg = <0x000000 0x08>;
+			};
+
+			pio_0: gpio@0020 {
+				compatible = "altr,pio-1.0";
+				reg = <0x0020 0x20>;
+				interrupts = <0 40 4>;
+				altr,gpio-bank-width = <32>;
+				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
+				#gpio-cells = <1>;
+				gpio-controller;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+
+			pio_1: gpio@0040 {
+				compatible = "altr,pio-1.0";
+				reg = <0x0040 0x20>;
+				interrupts = <0 41 4>;
+				altr,gpio-bank-width = <32>;
+				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
+				#gpio-cells = <1>;
+				gpio-controller;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+
+			pio_2: gpio@0060 {
+				compatible = "altr,pio-1.0";
+				reg = <0x0060 0x20>;
+				interrupts = <0 42 4>;
+				altr,gpio-bank-width = <32>;
+				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
+				#gpio-cells = <1>;
+				gpio-controller;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+
+			pio_3: gpio@0080 {
+				compatible = "altr,pio-1.0";
+				reg = <0x0080 0x20>;
+				interrupts = <0 43 4>;
+				altr,gpio-bank-width = <3>;
+				altr,interrupt_type = <IRQ_TYPE_EDGE_RISING>;
+				#gpio-cells = <1>;
+				gpio-controller;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+
+			hdmi_0: hdmi0x0100 {
+				compatible = "altr,vip-frame-reader-1.0";
+				reg = <0x0100 0x80>;
+				max-width = <0x500>;
+				max-height = <0x2d0>;
+				bits-per-color = <0x8>;
+				mem-word-width = <0x80>;
+			};
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		gmac1: ethernet@ff702000 {
+			status = "okay";
+			phy-handle = <&phy0>;
+			phy-mode = "rgmii";
+			snps,max-mtu = <4062>;
+		};
+
+		mdio1: mdio@ff702000 {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: ethernet-phy@0 {
+				reg = <0x3>;
+				device_type = "ethernet-phy";
+				compatible = "ethernet-phy-ieee802.3-c22";
+			};
+		};
+	};
+};
