@@ -89,8 +89,7 @@ static int camio_gpio_irq_set_type(struct irq_data *d,
 		writel(edgemask, mm_gc->regs + CAMIO_GPIO_EDGER);
 		spin_unlock_irqrestore(&camio_gc->gpio_lock, flags);
 		return 0;
-	}
-	else if (type == IRQ_TYPE_EDGE_FALLING) {
+	} else if (type == IRQ_TYPE_EDGE_FALLING) {
 		spin_lock_irqsave(&camio_gc->gpio_lock, flags);
 		edgemask = readl(mm_gc->regs + CAMIO_GPIO_EDGER);
 		edgemask &= ~(1 << irqd_to_hwirq(d));
@@ -98,8 +97,7 @@ static int camio_gpio_irq_set_type(struct irq_data *d,
 		writel(edgemask, mm_gc->regs + CAMIO_GPIO_EDGER);
 		spin_unlock_irqrestore(&camio_gc->gpio_lock, flags);
 		return 0;
-	}
-	else if (type == IRQ_TYPE_EDGE_BOTH) {
+	} else if (type == IRQ_TYPE_EDGE_BOTH) {
 		spin_lock_irqsave(&camio_gc->gpio_lock, flags);
 		edgemask = readl(mm_gc->regs + CAMIO_GPIO_EDGER);
 		edgemask |= (1 << irqd_to_hwirq(d));
@@ -249,9 +247,8 @@ static ssize_t camio_altinput_show(struct device *dev,
 	ssize_t	status;
 
 	offset = 1;
-	if (!strcmp(attr->attr.name, "input_polarity")) {
+	if (!strcmp(attr->attr.name, "input_polarity"))
 		offset = 6;
-	}
 
 	reg = readl(camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 	val = 0;
@@ -267,15 +264,14 @@ static ssize_t camio_altinput_show(struct device *dev,
 static ssize_t camio_altinput_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
-	// struct gpio_desc	*desc = dev_get_drvdata(dev);
+	/* struct gpio_desc	*desc = dev_get_drvdata(dev); */
 	struct platform_device *pdev = to_platform_device(dev);
 	struct camio_gpio_chip *camio_gc = platform_get_drvdata(pdev);
 	unsigned int val, reg, i, offset;
 
 	offset = 1;
-	if (!strcmp(attr->attr.name, "input_polarity")) {
+	if (!strcmp(attr->attr.name, "input_polarity"))
 		offset = 6;
-	}
 
 	sscanf(buf, "%x", &val);
 
@@ -289,6 +285,27 @@ static ssize_t camio_altinput_store(struct device *dev,
 	writel(reg, camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 
 	return size;
+}
+
+static ssize_t camio_altoutput_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct platform_device *pdev = to_platform_device(dev);
+	struct camio_gpio_chip *camio_gc = platform_get_drvdata(pdev);
+	unsigned int reg, i, offset;
+	ssize_t	status;
+	unsigned int val[4];
+
+	offset = 3;
+	reg = readl(camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
+	for (i = 0; i < 4; i++)
+		val[i] = ((reg & (0x3 << (i * 8 + offset)))
+				>> (i * 8 + offset));
+
+	status = sprintf(buf, "0x%X 0x%X 0x%X 0x%X\n", val[0], val[1], val[2],
+			 val[3]);
+
+	return status;
 }
 
 static ssize_t camio_altoutput_store(struct device *dev,
@@ -306,8 +323,10 @@ static ssize_t camio_altoutput_store(struct device *dev,
 		reg = readl(camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 		for (i = 0; i < 4; i++) {
 			/* If pin was selected, set the output mux */
-			if (pins & (1 << i))
+			if (pins & (1 << i)) {
+				reg &= ~(0x3 << (i * 8 + offset));
 				reg |= (select << (i * 8 + offset));
+			}
 		}
 		writel(reg, camio_gc->mmchip.regs + CAMIO_GPIO_PCR);
 	} else {
@@ -317,9 +336,12 @@ static ssize_t camio_altoutput_store(struct device *dev,
 	return size;
 }
 
-static DEVICE_ATTR(altinput, 0666, camio_altinput_show, camio_altinput_store);
-static DEVICE_ATTR(input_polarity, 0666, camio_altinput_show, camio_altinput_store);
-static DEVICE_ATTR(altoutput, 0222, NULL, camio_altoutput_store);
+static DEVICE_ATTR(altinput, 0666, camio_altinput_show,
+			camio_altinput_store);
+static DEVICE_ATTR(input_polarity, 0666, camio_altinput_show,
+			camio_altinput_store);
+static DEVICE_ATTR(altoutput, 0666, camio_altoutput_show,
+			camio_altoutput_store);
 
 static struct attribute *camio_attrs[] = {
 	&dev_attr_altinput.attr,
@@ -383,8 +405,7 @@ int camio_gpio_probe(struct platform_device *pdev)
 	irq_set_chained_handler(camio_gc->hwirq, camio_gpio_irq_handler);
 
 	ret = sysfs_create_group(&pdev->dev.kobj, &camio_attr_group);
-	if (ret)
-	{
+	if (ret) {
 		pr_err("%s: sysfs create group failed with status %d\n",
 			node->full_name, ret);
 		goto teardown;
@@ -417,13 +438,13 @@ static int camio_gpio_remove(struct platform_device *pdev)
 	sysfs_remove_group(&pdev->dev.kobj, &camio_attr_group);
 
 	status = gpiochip_remove(&camio_gc->mmchip.gc);
-	
+
 	if (status < 0)
 		return status;
 
 	if (camio_gc->irq) {
 		irq_dispose_mapping(camio_gc->hwirq);
-	
+
 		for (i = 0; i < camio_gc->mmchip.gc.ngpio; i++) {
 			irq = irq_find_mapping(camio_gc->irq, i);
 			if (irq > 0)

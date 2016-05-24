@@ -1873,7 +1873,10 @@ static netdev_tx_t stmmac_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned int nopaged_len = skb_headlen(skb);
 	unsigned int enh_desc = priv->plat->enh_desc;
 
+	spin_lock(&priv->tx_lock);
+
 	if (unlikely(stmmac_tx_avail(priv) < nfrags + 1)) {
+		spin_unlock(&priv->tx_lock);
 		if (!netif_queue_stopped(dev)) {
 			netif_stop_queue(dev);
 			/* This is a hard error, log it. */
@@ -1881,8 +1884,6 @@ static netdev_tx_t stmmac_xmit(struct sk_buff *skb, struct net_device *dev)
 		}
 		return NETDEV_TX_BUSY;
 	}
-
-	spin_lock(&priv->tx_lock);
 
 	if (priv->tx_path_in_lpi_mode)
 		stmmac_disable_eee_mode(priv);
@@ -2695,6 +2696,9 @@ static int stmmac_hw_init(struct stmmac_priv *priv)
  * @addr: iobase memory address
  * Description: this is the main probe function used to
  * call the alloc_etherdev, allocate the priv structure.
+ * Return:
+ * on success the new private structure is returned, otherwise the error
+ * pointer.
  */
 struct stmmac_priv *stmmac_dvr_probe(struct device *device,
 				     struct plat_stmmacenet_data *plat_dat,
@@ -2706,7 +2710,7 @@ struct stmmac_priv *stmmac_dvr_probe(struct device *device,
 
 	ndev = alloc_etherdev(sizeof(struct stmmac_priv));
 	if (!ndev)
-		return NULL;
+		return ERR_PTR(-ENOMEM);
 
 	SET_NETDEV_DEV(ndev, device);
 
@@ -2883,6 +2887,10 @@ int stmmac_suspend(struct net_device *ndev)
 		clk_disable_unprepare(priv->stmmac_clk);
 	}
 	spin_unlock_irqrestore(&priv->lock, flags);
+
+	priv->oldlink = 0;
+	priv->speed = 0;
+	priv->oldduplex = -1;
 	return 0;
 }
 

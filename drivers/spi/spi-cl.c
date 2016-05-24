@@ -410,18 +410,17 @@ static irqreturn_t spi_cl_irq(int irq, void *dev)
  */
 static int spi_cl_remove(struct platform_device *pdev)
 {
-	int rv = 0;
 	struct spi_cl *spi_cl;
 	struct spi_master *master  = platform_get_drvdata(pdev);
 	spi_cl = spi_master_get_devdata(master);
 
-	rv = spi_bitbang_stop(&spi_cl->bitbang);
+	spi_bitbang_stop(&spi_cl->bitbang);
 
 	sysfs_remove_group(&pdev->dev.kobj, &spi_cl_attr_group);
 
 	spi_master_put(master);
 
-	return rv;
+	return 0;
 }
 
 static int spi_cl_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
@@ -577,7 +576,7 @@ static int spi_cl_txrx_bufs(struct spi_device *spi, struct spi_transfer *t)
 	iowrite16(IER, &BaseAddr[IER_OFFSET]);
 
 	IPR = ioread16(&BaseAddr[IPR_OFFSET]);
-	INIT_COMPLETION(spi_cl->done);
+	reinit_completion(&spi_cl->done);
 
 	/* reset fifos */
 	CSR = ioread16(&BaseAddr[CSR_OFFSET]);
