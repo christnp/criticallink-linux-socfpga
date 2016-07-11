@@ -1926,6 +1926,13 @@ dev_config (struct file *fd, const char __user *buf, size_t len, loff_t *ptr)
 		 * kick in after the ep0 descriptor is closed.
 		 */
 		fd->f_op = &ep0_io_operations;
+
+		/* Set FMODE_CAN_READ
+		 * because on open(), no .read function was available
+		 * and hence, this was not set 
+		 */
+		fd->f_mode |= FMODE_CAN_READ;
+
 		value = len;
 	}
 	return value;
