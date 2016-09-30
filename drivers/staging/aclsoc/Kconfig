@@ -1,0 +1,8 @@
+#
+# "Altera Cyclone V SOC OpenCL Driver"
+#
+config ACLSOC
+	tristate "Altera Open CL Driver for Cyclone V SOC module"
+	default n
+	help
+	  Altera Open CL Driver for Cyclone V SOC module
