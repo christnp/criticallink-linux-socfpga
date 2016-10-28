@@ -17,6 +17,7 @@
 
 /dts-v1/;
 #include "socfpga.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
 
 / {
 	model = "SOC Camera";
@@ -203,6 +204,7 @@
 		};
 
 		sysmgr@ffd08000 {
+			compatible = "snps,dwc2-vbus-ext";
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
@@ -210,6 +212,17 @@
 			status = "okay";
 		};
 
+		gpio@ff708000 {
+			status = "okay";
+		};
+
+		gpio@ff709000 {
+			status = "okay";
+		};
+
+		gpio@ff70a000 {
+			status = "okay";
+		};
 
 		gpio3: gpio@ff220000 {
 			compatible = "cl,camio-1.0";
