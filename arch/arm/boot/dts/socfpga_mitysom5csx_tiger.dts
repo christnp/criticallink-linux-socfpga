@@ -67,6 +67,12 @@
 				bits-per-color = <0x8>;
 				mem-word-width = <0x80>;
 			};
+
+			tsc2046: touchscreen0x0180 {
+				compatible = "cl,tsc2046";
+				reg = <0x180 0x20>;
+				interrupts = <0 45 4>;
+			};
 		};
 
 		spi0: spi@fff00000 {
