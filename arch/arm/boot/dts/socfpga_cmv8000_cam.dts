@@ -204,11 +204,11 @@
 		};
 
 		sysmgr@ffd08000 {
-			compatible = "snps,dwc2-vbus-ext";
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
 		usb1: usb@ffb40000 {
+			compatible = "snps,dwc2-vbus-ext";
 			status = "okay";
 		};
 
@@ -218,11 +218,16 @@
 
 		gpio@ff709000 {
 			status = "okay";
+			gpio1: gpio-controller@0 {
+				ngpios = <29>;
+				gpio-line-names = "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "AVDD_EN";
+			};
 		};
 
 		gpio@ff70a000 {
 			status = "okay";
 		};
+
 
 		gpio3: gpio@ff220000 {
 			compatible = "cl,camio-1.0";
@@ -268,17 +273,23 @@
 };
 
 &gmac1 {
-	phy-mode = "rgmii";
-	snps,phy-addr = <0xffffffff>; /* probe for phy addr */
-	rxd0-skew-ps = <0>;
-	rxd0-skew-ps = <0>;
-	rxd1-skew-ps = <0>;
-	rxd2-skew-ps = <0>;
-	rxd3-skew-ps = <0>;
-	txen-skew-ps = <0>;
-	txc-skew-ps = <2600>;
-	rxdv-skew-ps = <0>;
-	rxc-skew-ps = <2000>;
-	snps,max-mtu = <4062>;
 	status = "okay";
+	phy-handle = <&phy0>;
+	phy-mode = "rgmii";
+	snps,max-mtu = <4062>;
+	/* txc-skew-ps = <2600>; */
+	/* rxdv-skew-ps = <0>; */
+	/* rxc-skew-ps = <2000>; */
 };
+
+&mdio1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	phy0: ethernet-phy@0 {
+		reg = <0x3>;
+		device_type = "ethernet-phy";
+		compatible = "ethernet-phy-ieee802.3-c22";
+	};
+};
+
