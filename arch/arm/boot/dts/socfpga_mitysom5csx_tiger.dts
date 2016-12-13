@@ -75,6 +75,11 @@
 			};
 		};
 
+		streamer0: streamer@20000000 {
+			compatible = "uio,irq";
+			interrupts = <0 46 1>;
+		};
+
 		spi0: spi@fff00000 {
 			num-chipselect = <4>;
 			status = "okay";
