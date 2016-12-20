@@ -1,0 +1,20 @@
+* Texas Instruments tsc2046 touchscreen FPGA controller
+
+Required properties:
+- compatible: must be "cl,tsc2046".
+- reg: Address of FPGA core
+- interrupts: interrupt for touch event
+Optional properties:
+- cl,swap-xy: swap x and y
+- cl,reverse-x: Invert x axis
+- cl,reverse-y: Invert y axis
+
+Example:
+
+tsc2046: touchscreen0x0180 {
+	compatible = "cl,tsc2046";
+	reg = <0x180 0x20>;
+	interrupts = <0 45 4>;
+	cl,swap-xy;
+	cl,reverse-x;
+};

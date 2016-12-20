@@ -46,6 +46,12 @@ config TOUCHSCREEN_ADS7846
 	  To compile this driver as a module, choose M here: the
 	  module will be called ads7846.
 
+config TOUCHSCREEN_TSC2046
+	tristate "TSC2046 based touchscreens"
+	help
+	  Say Y here if you have a touchscreen interface using the
+	  TSC2046 controller.
+
 config TOUCHSCREEN_AD7877
 	tristate "AD7877 based touchscreens"
 	depends on SPI_MASTER
