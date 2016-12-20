@@ -19,32 +19,59 @@
 				reg = <0x000000 0x08>;
 			};
 
-			uart_pc: serial@0020 {
-				compatible = "altr,uart-1.0";
-				reg = <0x0020 0x20>;
+			uart_pc: serial@0200 {
+				compatible = "altr,16550-FIFO128";
+				reg = <0x0200 0x200>;
 				interrupts = <0 40 4>;
 				clock-frequency = <100000000>;
+				fifo-size = <128>;
+				reg-io-width = <4>;
+				reg-shift = <2>;
+				has-hw-flow-control;
 			};
 
-			uart_1: serial@0040 {
-				compatible = "altr,uart-1.0";
-				reg = <0x0040 0x20>;
+			uart_1: serial@0400 {
+				compatible = "altr,16550-FIFO128";
+				reg = <0x0400 0x200>;
 				interrupts = <0 41 4>;
 				clock-frequency = <100000000>;
+				fifo-size = <128>;
+				reg-io-width = <4>;
+				reg-shift = <2>;
+				has-hw-flow-control;
 			};
 
-			uart_2: serial@0060 {
-				compatible = "altr,uart-1.0";
-				reg = <0x0060 0x20>;
+			uart_2: serial@0600 {
+				compatible = "altr,16550-FIFO128";
+				reg = <0x0600 0x200>;
 				interrupts = <0 42 4>;
 				clock-frequency = <100000000>;
+				fifo-size = <128>;
+				reg-io-width = <4>;
+				reg-shift = <2>;
+				has-hw-flow-control;
 			};
 
-			uart_3: serial@0080 {
-				compatible = "altr,uart-1.0";
-				reg = <0x0080 0x20>;
+			uart_3: serial@0800 {
+				compatible = "altr,16550-FIFO128";
+				reg = <0x0800 0x200>;
 				interrupts = <0 43 4>;
 				clock-frequency = <100000000>;
+				fifo-size = <128>;
+				reg-io-width = <4>;
+				reg-shift = <2>;
+				has-hw-flow-control;
+			};
+
+			uart_485: serial@0a00 {
+				compatible = "altr,16550-FIFO128";
+				reg = <0x0a00 0x200>;
+				interrupts = <0 47 4>;
+				clock-frequency = <100000000>;
+				fifo-size = <128>;
+				reg-io-width = <4>;
+				reg-shift = <2>;
+				has-hw-flow-control;
 			};
 
 			pio_0: gpio@0020 {
