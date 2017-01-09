@@ -1,0 +1,18 @@
+#include "socfpga_mitysom5csx-h6-4ya_devkit.dts"
+
+/ {
+
+	soc {
+
+		// disable the LW bus as OpenCL uses it directly
+		hps_lw_bus: bus@0ff200000 {
+			status = "disabled";
+		};
+
+		i2c2: i2c@ffc06000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
+	};
+};
