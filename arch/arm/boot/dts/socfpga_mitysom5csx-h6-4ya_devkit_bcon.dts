@@ -14,5 +14,10 @@
 			status = "okay";
 		};
 
+		i2c3: i2c@ffc07000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
 	};
 };
