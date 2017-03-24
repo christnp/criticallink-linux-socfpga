@@ -49,6 +49,62 @@
 			};
 		};
 
+		hps_lw_bus: bus@0ff200000 {
+			compatible = "simple-bus";
+			reg = <0xFF200000 0x00200000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0 0xFF200000 0x00200000>;
+			status = "okay";
+
+			sysid_qsys: sysid@000000 {
+				compatible = "altr,sysid-1.0";
+				reg = <0x000000 0x08>;
+			};
+
+			clspi: spi@00001000 {
+				compatible = "cl,spi-1.0";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x00001000 0x0100>;
+				interrupts = <0 42 4>;
+				master-ref-clk = <50000000>;
+				num-chipselect = <8>;
+				bus-num = <3>;
+
+				spidev@1 {
+					spi-max-frequency = <2000000>;
+					reg = <0>;
+					compatible = "linux,spidev";
+				};
+
+				spi-flash@1 {
+					#address-cells = <1>;
+					#size-cells = <1>;
+					compatible = "s25fl256s0";
+					reg = <1>;
+					spi-max-frequency = <5000000>;
+				};
+
+				spidev@2 {
+					spi-max-frequency = <2000000>;
+					reg = <2>;
+					compatible = "linux,spidev";
+				};
+			};
+
+			gpio3: gpio@00020000 {
+				compatible = "cl,camio-1.0";
+				reg = <0x00020000 0x20>;
+				interrupts = <0 40 4>;
+				virtual_irq_start = <342>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+		};
+
 		dwmmc0@ff704000 {
 			num-slots = <1>;
 			supports-highspeed;
@@ -70,127 +126,6 @@
 		i2c1: i2c@ffc05000 {
 			speed-mode = <0>;
 			status = "okay";
-		};
-
-		qspi: spi@ff705000 {
-			compatible = "cadence,qspi";
-                        #address-cells = <1>;
-			#size-cells = <0>;
-			reg = <0xff705000 0x1000>,
-				<0xffa00000 0x1000>;
-			interrupts = <0 151 4>;
-			master-ref-clk = <400000000>;
-			ext-decoder = <0>;  /* external decoder */
-			num-chipselect = <4>;
-			fifo-depth = <128>;
-			bus-num = <2>;
-
-			flash0: n25q00@0 {
-				#address-cells = <1>;
-				#size-cells = <1>;
-				compatible = "n25q00";
-				reg = <0>;      /* chip select */
-				spi-max-frequency = <10000000>;
-				m25p,fast-read;
-				page-size = <256>;
-				block-size = <16>; /* 2^16, 64KB */
-				read-delay = <4>;  /* delay value in read data capture register */
-				tshsl-ns = <50>;
-				tsd2d-ns = <50>;
-				tchsh-ns = <4>;
-				tslch-ns = <4>;
-
-				partition@qspi-preloader {
-					/* 64 KB for preloader image 0-3. */
-					label = "Preloader Image 0-3";
-					reg = <0x0 0x40000>;
-				};
-				partition@qspi-ubootenv {
-					/* 64 KB for u-Boot Env. */
-					label = "U-Boot Env";
-					reg = <0x40000 0x10000>;
-				};
-				partition@qspi-dtb {
-					/* 64 KB for DTB */
-					label = "DTB";
-					reg = <0x50000 0x10000>;
-				};
-				partition@qspi-uboot {
-					/* 512 KB for U-Boot */
-					label = "U-Boot";
-					reg = <0x60000 0x80000>;
-				};
-				partition@qspi-kernel {
-					/* 8 MB for Kernel */
-					label = "Kernel";
-					reg = <0xE0000 0x800000>;
-				};
-				partition@qspi-rootfs {
-					/* 7.125 MB for jffs2 data. */
-					label = "Flash 0 jffs2 Filesystem";
-					reg = <0x8E0000 0x720000>;
-				};
-			};
-
-			flash1: n25q00@1 {
-				#address-cells = <1>;
-				#size-cells = <1>;
-				compatible = "n25q00";
-				reg = <1>;      /* chip select */
-				spi-max-frequency = <10000000>;
-				m25p,fast-read;
-				page-size = <256>;
-				block-size = <16>; /* 2^16, 64KB */
-				read-delay = <4>;  /* delay value in read data capture register */
-				tshsl-ns = <50>;
-				tsd2d-ns = <50>;
-				tchsh-ns = <4>;
-				tslch-ns = <4>;
-
-				partition@0 {
-					/* 16MB for raw data. */
-					label = "Flash 1 Filesystem";
-					reg = <0x0 0x1000000>;
-				};
-			};
-		};
-
-		clspi: spi@ff201000 {
-			compatible = "cl,spi-1.0";
-                        #address-cells = <1>;
-			#size-cells = <0>;
-			reg = <0xff201000 0x0100>;
-			interrupts = <0 42 4>;
-			master-ref-clk = <50000000>;
-			num-chipselect = <8>;
-			bus-num = <3>;
-
-			spidev@1 {
-				spi-max-frequency = <2000000>;
-				reg = <0>;
-				compatible = "linux,spidev";
-			};
-
-			spi-flash@1 {
-				#address-cells = <1>;
-				#size-cells = <1>;
-				compatible = "s25fl256s0";
-				reg = <1>;
-				spi-max-frequency = <2000000>;
-			};
-
-			spidev@2 {
-				spi-max-frequency = <2000000>;
-				reg = <2>;
-				compatible = "linux,spidev";
-			};
-		};
-
-		sldhub: debugger {
-			#address-cells = <1>;
-			#size-cells = <1>;
-			compatible = "altr,sld-hub";
-			reg = <0xFF221000 0x80>;
 		};
 
 		timer0@ffc08000 {
@@ -221,11 +156,6 @@
 			cpu1-start-addr = <0xffd080c4>;
 		};
 
-		usb1: usb@ffb40000 {
-			compatible = "snps,dwc2-vbus-ext";
-			status = "okay";
-		};
-
 		gpio@ff708000 {
 			status = "okay";
 		};
@@ -241,18 +171,6 @@
 
 		gpio@ff70a000 {
 			status = "okay";
-		};
-
-
-		gpio3: gpio@ff220000 {
-			compatible = "cl,camio-1.0";
-			reg = <0xff220000 0x20>;
-			interrupts = <0 40 4>;
-			virtual_irq_start = <342>;
-			interrupt-controller;
-			#interrupt-cells = <2>;
-			gpio-controller;
-			#gpio-cells = <2>;
 		};
 
 		streamer0: streamer@20000000 {
@@ -279,52 +197,19 @@
 		compatible = "fmd,24c16";
 		reg = <0x50>;
 	};
-	/* on SOM -- TODO remove from MP config */
-	rtc@69 {
-		device_type = "rtc";
-		compatible = "abracon,ab1803";
-		reg = <0x69>;
-	};
 };
 
 &i2c1 {
-	/* on Sensor board */
-	tempsens@4B {
-		compatible = "ti,tmp100";
-		reg = <0x4B>;
-	};
-
 	eeprom@57 {
 		compatible = "microchip,24c128";
 		reg = <0x57>;
 	};
 
-	ads1115@48 {
-		compatible = "ti,ads1115";
-		reg = <0x48>;
-		#address-cells = <1>;
-		#size-cells = <0>;
-		
-		voltage@0 {
-			reg = <0>;
-			ti,gain = <1>;
-			ti,datarate = <1>;
-		};
-
-		current@1 {
-			reg = <1>;
-			ti,gain = <1>;
-			ti,datarate = <1>;
-		};
-
-		temp@2 {
-			reg = <2>;
-			ti,gain = <1>;
-			ti,datarate = <1>;
-		};
+	/* on Ethernet Board, (temperature and EEPROM) */
+	eeprom@55 {
+		compatible = "microchip,24c128";
+		reg = <0x55>;
 	};
-
-	/* on Ethernet Board, TBD (temperature and EEPROM) */
 };
 
 &gmac1 {
