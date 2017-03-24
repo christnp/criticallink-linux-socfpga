@@ -49,6 +49,7 @@
 #define CSR_GO			(1 << 8)
 #define CSR_FIFO_RST		(1 << 9)
 #define CSR_DELAY_CSMASK	(1 << 10)
+#define CSR_SPI_HOLD		(1 << 11)
 
 #define FWR_WRITECNT_MASK	0x0FFF
 #define FWR_WRITECNT_SHIFT	0
@@ -79,6 +80,8 @@
 #define DEL_DELAY_MASK		0x7FFF
 #define DEL_DELAY_SHIFT		0
 #define DEL_DELAY_EN		0x8000
+
+// #define KDBG 1
 
 struct spi_cl_slave {
 	int bytes_per_word;
@@ -312,6 +315,9 @@ static void rx_word(struct spi_cl *spi_cl)
 	if (spi_cl->rx_buf) {
 		int i;
 		for (i = 0; i < spi_cl->bytes_per_word; i++) {
+#ifdef KDBG
+			printk(KERN_WARNING "RX - 0x%X\n", FDR);
+#endif
 			*spi_cl->rx_buf++ = FDR & 0xFF;
 			FDR >>= 8;
 		}
@@ -358,22 +364,29 @@ static irqreturn_t spi_cl_irq(int irq, void *dev)
 	BaseReg = (unsigned short *)spi_cl->baseaddr;
 
 	IPR = ioread16(&BaseReg[IPR_OFFSET]);
-	IER = ioread16(&BaseReg[IER_OFFSET]);
+
+	/* disable interrupts */
+	IER = 0;
+	iowrite16(IER, &BaseReg[IER_OFFSET]);
+	wmb();
 
 	if (spi_cl->remaining_bytes > 0)
 		fill_tx_fifo(spi_cl);
 
 	IPR = ioread16(&BaseReg[IPR_OFFSET]);
-	IER = ioread16(&BaseReg[IER_OFFSET]);
 	rmb();
+#ifdef KDBG
+	printk(KERN_WARNING "IPR = 0x%X\n", IPR);
+#endif
 	while (IPR & IPR_MISO_NEMPTY) {
 		rx_word(spi_cl);
 		IPR = ioread16(&BaseReg[IPR_OFFSET]);
 		rmb();
 	}
 
+#if 0
 	/* no more data to transmit, disable FIFO level flags */
-	if (spi_cl->remaining_bytes <= 0)
+	if (spi_cl->remaining_bytes <= spi_cl->fifo_depth/2)
 		/* disable helf empty threshold */
 		IER &= ~IER_MOSI_HF;
 
@@ -399,6 +412,24 @@ static irqreturn_t spi_cl_irq(int irq, void *dev)
 		/* signal to waiting task that we're done */
 		complete(&spi_cl->done);
 	}
+#else
+	/* If there is data left to transmit */
+	if (spi_cl->remaining_bytes > 0)
+	{
+		/* enable FIFO level and / or transmit complete mask */
+		IER |= IER_MOSI_HF;
+		IER |= IER_MOSI_TC;
+		iowrite16(IER, &BaseReg[IER_OFFSET]);
+
+	}
+	else /* no more data to transmit, disable FIFO level flags */
+	{
+		IPR = ioread16(&BaseReg[IPR_OFFSET]);
+		iowrite16(IPR, &BaseReg[IPR_OFFSET]);
+
+		complete(&spi_cl->done);
+	}
+#endif
 
 	return IRQ_HANDLED;
 }
@@ -449,6 +480,9 @@ static int spi_cl_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
 	if (spi->bits_per_word > 32 || (spi->bits_per_word & 3) != 0)
 		return -EINVAL;
 	spi_cl->bytes_per_word = (spi->bits_per_word + 7) / 8;
+#ifdef KDBG
+	printk(KERN_WARNING "Bits per word = %d/%d\n", spi->bits_per_word, bits_per_word);
+#endif
 	CSR &= ~(CSR_DWIDTH_MASK << CSR_DWIDTH_SHIFT);
 	CSR |= ((spi->bits_per_word / 4 - 1) & CSR_DWIDTH_MASK)
 		<< CSR_DWIDTH_SHIFT;
@@ -538,9 +572,27 @@ static int spi_cl_setup(struct spi_device *spi)
 
 static void spi_cl_chipselect(struct spi_device *spi, int value)
 {
-	/* struct spi_cl *spi_cl = spi_master_get_devdata(spi->master); */
+	struct spi_cl *spi_cl = spi_master_get_devdata(spi->master);
+	unsigned short *BaseAddr = (unsigned short *)spi_cl->baseaddr;
+	u16 CSR = ioread16(&BaseAddr[CSR_OFFSET]);
+	
+	switch (value) 
+	{
+		case BITBANG_CS_INACTIVE:
+			CSR &= ~CSR_SPI_HOLD;
+			iowrite16(CSR, &BaseAddr[CSR_OFFSET]);
+			wmb();
+			break;
 
-	/* chip select controlled by transfers.. */
+		case BITBANG_CS_ACTIVE:
+			CSR |= CSR_SPI_HOLD;
+			iowrite16(CSR, &BaseAddr[CSR_OFFSET]);
+			wmb();
+			break;
+
+		default:
+			break;
+	}
 }
 
 static int spi_cl_txrx_bufs(struct spi_device *spi, struct spi_transfer *t)
@@ -559,6 +611,10 @@ static int spi_cl_txrx_bufs(struct spi_device *spi, struct spi_transfer *t)
 	else
 		spi_cl->rx_remaining_bytes = 0;
 
+#ifdef KDBG
+	printk(KERN_WARNING "remaining_bytes = %d\n", spi_cl->remaining_bytes);
+	printk(KERN_WARNING "rx_remaining_bytes = %d\n", spi_cl->rx_remaining_bytes);
+#endif
 	spi_cl->tx_buf = t->tx_buf;
 
 	do {
@@ -568,14 +624,13 @@ static int spi_cl_txrx_bufs(struct spi_device *spi, struct spi_transfer *t)
 	} while (!(FRR & FRR_EMPTY));
 
 	/* clear any interrupt pending conditions */
-	IPR = ioread16(&BaseAddr[IPR_OFFSET]);
-	IPR |= (IPR_MOSI_TC);
-	iowrite16(IPR, &BaseAddr[IPR_OFFSET]);
-
 	IER = 0;
 	iowrite16(IER, &BaseAddr[IER_OFFSET]);
 
 	IPR = ioread16(&BaseAddr[IPR_OFFSET]);
+	IPR |= (IPR_MOSI_TC);
+	iowrite16(IPR, &BaseAddr[IPR_OFFSET]);
+
 	reinit_completion(&spi_cl->done);
 
 	/* reset fifos */
@@ -595,21 +650,29 @@ static int spi_cl_txrx_bufs(struct spi_device *spi, struct spi_transfer *t)
 	else
 		CSR &= ~(CSR_RCVEN);
 	iowrite16(CSR, &BaseAddr[CSR_OFFSET]);
+	wmb();
 
 	/* enable interrupts to catch transfer completion, or
 	 * FIFO emptying */
 	IER = 0;
 	IER |= IER_MOSI_TC;
-	if (spi_cl->remaining_bytes)
+	if (spi_cl->remaining_bytes > 0)
 		IER |= IER_MOSI_HF;
+#if 0
 	if (spi_cl->rx_remaining_bytes >= spi_cl->fifo_depth/2)
 		IER |= IER_MISO_HF;
 	else if (spi_cl->rx_remaining_bytes > 0)
 		IER |= IER_MISO_NEMPTY;
+#endif
 	iowrite16(IER, &BaseAddr[IER_OFFSET]);
 
 	/* wait for completion */
 	wait_for_completion(&spi_cl->done);
+
+#ifdef KDBG
+	if (spi_cl->remaining_bytes)
+		printk(KERN_WARNING "t->len = %d.  remaining_bytes = %d\n", t->len, spi_cl->remaining_bytes);
+#endif
 
 	return t->len - spi_cl->remaining_bytes;
 }
