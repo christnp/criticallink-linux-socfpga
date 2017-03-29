@@ -116,3 +116,17 @@
 		};
 	};
 };
+
+&i2c1 {
+	/* Ethernet Board */
+	eeprom@55 {
+		compatible = "microchip,24c128";
+		reg = <0x55>;
+	};
+
+	/* Test fixture loopback board */
+	eeprom@50 {
+		compatible = "microchip,24c128";
+		reg = <0x50>;
+	};
+};
