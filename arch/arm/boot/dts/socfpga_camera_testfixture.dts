@@ -130,3 +130,23 @@
 		reg = <0x50>;
 	};
 };
+
+/* USB removed in eldim -C */
+&usb1 {
+	status = "disabled";
+};
+
+/* SPI Flash removed in eldim -C */
+&flash0 {
+	status = "disabled";
+};
+
+/* SPI Flash removed in eldim -C */
+&flash1 {
+	status = "disabled";
+};
+
+/* RTC removed in eldim -C */
+&rtc0 {
+	status = "disabled";
+};
