@@ -1,0 +1,147 @@
+#include "socfpga_mitysom5cse.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	aliases {
+		/* this allow the ethaddr uboot environmnet variable contents
+		 * to be added to the gmac1 device tree blob.
+		 */
+		ethernet0 = &gmac1;
+	};
+
+	soc {
+
+		hps_lw_bus: bus@0ff200000 {
+			status = "okay";
+		};
+
+		streamer0: streamer@20000000 {
+			compatible = "uio,irq";
+			interrupts = <0 46 1>;
+		};
+
+		streamer1: streamer@30000000 {
+			compatible = "uio,irq";
+			interrupts = <0 47 1>;
+		};
+
+		spi0: spi@fff00000 {
+			num-chipselect = <4>;
+			status = "okay";
+		};
+
+		spi1: spi@fff01000 {
+			num-chipselect = <1>;
+			status = "okay";
+			spidev_do@0 {
+				compatible = "spidev";
+				reg = <0>;
+				spi-max-frequency = <10000000>;
+				enable-dma = <1>;
+			};
+		};
+
+		usb1: usb@ffb40000 {
+			status = "okay";
+		};
+
+		dwmmc0@ff704000 {
+			num-slots = <1>;
+			supports-highspeed;
+			broken-cd;
+			altr,dw-mshc-ciu-div = <3>;
+			altr,dw-mshc-sdr-timing = <0 3>;
+
+			slot@0 {
+				reg = <0>;
+				bus-width = <4>;
+			};
+		};
+
+		gmac1: ethernet@ff702000 {
+			status = "okay";
+			phy-handle = <&phy0>;
+			phy-mode = "rgmii";
+			snps,max-mtu = <4062>;
+		};
+
+		mdio1: mdio@ff702000 {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: ethernet-phy@0 {
+				reg = <0x3>;
+				device_type = "ethernet-phy";
+				compatible = "ethernet-phy-ieee802.3-c22";
+			};
+		};
+		
+		i2c1: i2c@ffc05000 {
+		speed-mode = <0>;
+		status = "okay";
+
+			i2c-switch@70 { 
+			compatible="nxp,pca9548";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x70>;
+			
+			i2c@0 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x0>;
+			
+			};
+			i2c@1 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x1>;
+			
+			};
+
+			i2c@2 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x2>;
+			
+			};
+
+			i2c@3 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x3>;
+			
+			};
+
+			i2c@4 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x4>;
+			
+			};
+
+			i2c@5 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x5>;
+			
+			};
+
+			i2c@6 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x6>;
+			
+			};
+
+			i2c@7 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x7>;
+				status="disabled";
+				
+			};
+		};
+		};
+	};
+};
