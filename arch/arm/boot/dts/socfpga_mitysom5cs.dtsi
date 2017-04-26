@@ -171,7 +171,7 @@
 				compatible = "fmd,24c16";
 				reg = <0x50>;
 			};
-			rtc@69 {
+			rtc0: rtc@69 {
 				device_type = "rtc";
 				compatible = "abracon,ab1803";
 				reg = <0x69>;
