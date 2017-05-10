@@ -359,6 +359,7 @@ dtb-$(CONFIG_ARCH_SOCFPGA) += socfpga_arria5_socdk.dtb \
 	socfpga_mitysom5csx_niagara.dtb \
 	socfpga_mitysom5csx_leigh.dtb \
 	socfpga_mitysom5csx_tiger.dtb \
+	socfpga_mitysom5cse_smcb2.dtb \
 	socfpga_nano_cam.dtb \
 	socfpga_camera_testfixture.dtb \
 	socfpga_uhdpu.dtb \
