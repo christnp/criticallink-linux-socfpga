@@ -364,7 +364,6 @@ dtb-$(CONFIG_ARCH_SOCFPGA) += socfpga_arria5_socdk.dtb \
 	socfpga_nano_cam.dtb \
 	socfpga_camera_testfixture.dtb \
 	socfpga_uhdpu.dtb \
-	socfpga_uvision_devkit.dtb \
 	socfpga_vt.dtb
 dtb-$(CONFIG_ARCH_SPEAR13XX) += spear1310-evb.dtb \
 	spear1340-evb.dtb
