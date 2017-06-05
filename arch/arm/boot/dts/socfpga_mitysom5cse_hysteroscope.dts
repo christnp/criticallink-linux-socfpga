@@ -4,7 +4,7 @@
 / {
 	soc {
 
-		/* TODO -- change to use correct GPIO for grip button */
+		/* grip button */
 		gpio_keys {
 			compatible = "gpio-keys";
 			#address-cells = <1>;
@@ -50,5 +50,13 @@
 				bus-width = <4>;
 			};
 		};
+	};
+};
+
+&i2c1 {
+	/* EEPROM for factory config */
+	eeprom@50 {
+		compatible = "microchip,24c128";
+		reg = <0x55>;
 	};
 };
