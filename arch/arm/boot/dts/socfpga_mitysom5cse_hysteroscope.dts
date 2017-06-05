@@ -24,6 +24,11 @@
 			status = "okay";
 		};
 
+		i2c2: i2c@ffc06000 {
+			speed-mode = <0>;
+			status = "okay";
+		};
+
 		hps_lw_bus: bus@0ff200000 {
 			status = "okay";
 
