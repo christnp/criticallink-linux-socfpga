@@ -168,19 +168,6 @@ static int tsc2046_probe(struct platform_device *pdev)
 		goto probe_bail;
 	}
 
-	/* IRQ */
-	ts->irq = platform_get_irq(pdev, 0);
-	if (ts->irq < 0) {
-		dev_err(&pdev->dev, "No IRQ Assigned\n");
-		rv = -EINVAL;
-		goto probe_bail;
-	}
-
-	rv = devm_request_irq(&pdev->dev, ts->irq, tsc2046_irq, 0, pdev->name, ts);
-	if (rv) {
-		dev_err(&pdev->dev, "Unable to allocated IRQ\n");
-		goto probe_bail;
-	}
 
 	rv = tsc2046_get_conf(&pdev->dev, ts);
 	if (rv) 
@@ -199,6 +186,20 @@ static int tsc2046_probe(struct platform_device *pdev)
 		goto probe_bail;
 
 	platform_set_drvdata(pdev, ts);
+
+	/* IRQ */
+	ts->irq = platform_get_irq(pdev, 0);
+	if (ts->irq < 0) {
+		dev_err(&pdev->dev, "No IRQ Assigned\n");
+		rv = -EINVAL;
+		goto probe_bail;
+	}
+
+	rv = devm_request_irq(&pdev->dev, ts->irq, tsc2046_irq, 0, pdev->name, ts);
+	if (rv) {
+		dev_err(&pdev->dev, "Unable to allocated IRQ\n");
+		goto probe_bail;
+	}
 
 	return rv;
 
