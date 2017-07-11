@@ -13,6 +13,20 @@
 
 		hps_lw_bus: bus@0ff200000 {
 			status = "okay";
+
+			plzr_ctl_uart: serial@2040 {
+				compatible = "altr,uart-1.0";
+				reg = <0x2040 0x20>;
+				interrupts = <0 43 4>;
+				clock-frequency = <100000000>;
+			};
+			
+			alzr_ctl_uart: serial@2060 {
+				compatible = "altr,uart-1.0";
+				reg = <0x2060 0x20>;
+				interrupts = <0 42 4>;
+				clock-frequency = <100000000>;
+			};
 		};
 
 		streamer0: streamer@20000000 {
@@ -70,7 +84,8 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			phy0: ethernet-phy@0 {
-				reg = <0x7>;
+				/* reg = <0x7>; */
+				reg = <0x3>;
 				device_type = "ethernet-phy";
 				compatible = "ethernet-phy-ieee802.3-c22";
 			};
@@ -80,6 +95,7 @@
 		speed-mode = <0>;
 		status = "okay";
 
+/*
 			i2c-switch@70 { 
 			compatible="nxp,pca9548";
 			#address-cells = <1>;
@@ -142,6 +158,7 @@
 				
 			};
 		};
+*/
 		};
 	};
 };
